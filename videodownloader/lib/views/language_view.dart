@@ -22,20 +22,20 @@ class _LanguageViewState extends State<LanguageView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('Select your Language'),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Wrap(spacing: 16, direction: Axis.horizontal, alignment: WrapAlignment.center, children: [
-              if (categories.isNotEmpty)
-                for (int i = 0; i < categories.length; i++)
-                  ChangeRaisedButtonColor(
-                    text: categories[i].name!,
-                    onClick: (v) {
-                      selectAnswer(categories[i]);
-                    },
-                    isSelected: categories[i].isSelected,
-                  )
-            ]),
-          ),
+         Center(child:  Padding(
+           padding: const EdgeInsets.all(24),
+           child: Wrap(spacing: 16, direction: Axis.horizontal, alignment: WrapAlignment.center, children: [
+             if (categories.isNotEmpty)
+               for (int i = 0; i < categories.length; i++)
+                 ChangeRaisedButtonColor(
+                   text: categories[i].name!,
+                   onClick: (v) {
+                     selectAnswer(categories[i]);
+                   },
+                   isSelected: categories[i].isSelected,
+                 )
+           ]),
+         ),),
           buttonContinue()
         ],
       ),
@@ -49,27 +49,29 @@ class _LanguageViewState extends State<LanguageView> {
           builder: (context) => MainProvider(child: const DownloadView(),bloc: MainBloc()),
         ));
       },
-      child: Container(
-        width: 160,
-        margin: const EdgeInsets.all(16),
-        height: 60,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.black),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              'Continue',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              width: 4,
-            ),
-            Icon(
-              Icons.arrow_forward_outlined,
-              color: Colors.white,
-              size: 28,
-            )
-          ],
+      child: Center(
+        child: Container(
+          width: 160,
+          margin: const EdgeInsets.all(16),
+          height: 60,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: Colors.black),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                'Continue',
+                style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                width: 4,
+              ),
+              Icon(
+                Icons.arrow_forward_outlined,
+                color: Colors.white,
+                size: 28,
+              )
+            ],
+          ),
         ),
       ),
     );

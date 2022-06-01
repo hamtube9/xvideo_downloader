@@ -1,3 +1,4 @@
+import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -62,7 +63,7 @@ class _DownloadViewState extends State<DownloadView> {
         child: Column(
           children: [
             SizedBox(
-              height: height * 0.57,
+              height: height * 0.58,
               child: Stack(
                 children: [
                   Positioned(
@@ -356,20 +357,28 @@ class _DownloadViewState extends State<DownloadView> {
                             hintStyle: TextStyle(color: Colors.grey.shade400)),
                       ),
                     )),
-                    Container(
-                      height: 48,
-                      width: 48,
-                      decoration: const BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(12),
-                            bottomRight: Radius.circular(12)),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.link,
-                          size: 24,
-                          color: Colors.white,
+                    GestureDetector(
+                      onTap: () async {
+                        var text = await FlutterClipboard.paste();
+                        setState(() {
+                          _urlController!.text = text;
+                        });
+                      },
+                      child: Container(
+                        height: 48,
+                        width: 48,
+                        decoration: const BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(12),
+                              bottomRight: Radius.circular(12)),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.link,
+                            size: 24,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -382,7 +391,7 @@ class _DownloadViewState extends State<DownloadView> {
                       Expanded(
                           child: GestureDetector(
                         onTap: () {
-                          if(_urlController!.text.isEmpty){
+                          if (_urlController!.text.isEmpty) {
                             toast(context, 'Url can not empty');
                             return;
                           }

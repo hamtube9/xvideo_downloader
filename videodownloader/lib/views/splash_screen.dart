@@ -3,6 +3,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/views/download_view.dart';
+import 'package:videodownloader/views/gender_view.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -15,10 +16,10 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(milliseconds: 3000)).whenComplete(() {
+    Future.delayed(const Duration(milliseconds: 3000)).whenComplete(() {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => MainProvider(child: const DownloadView(),bloc: MainBloc()),
-      ));
+        builder: (context) =>const GenderView()),
+      );
     });
   }
 
@@ -48,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
             flex: 2,
           ),
           Expanded(
-            child: Center(child: LoadingAnimationWidget.discreteCircle(
+            child: Center(child: LoadingAnimationWidget.horizontalRotatingDots(
               color: Colors.white,
               size: 100,
             ),),

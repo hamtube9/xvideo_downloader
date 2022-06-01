@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/views/category_view.dart';
 
 enum Gender { male, female }
 
@@ -140,7 +141,9 @@ class _GenderViewState extends State<GenderView> {
   buttonContinue() {
     return  GestureDetector(
       onTap: (){
-
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const CategoryView(),
+        ));
       },
       child: Container(
         width: 160,

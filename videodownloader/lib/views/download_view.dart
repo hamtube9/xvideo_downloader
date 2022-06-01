@@ -6,6 +6,7 @@ import 'package:videodownloader/bloc/gallery_bloc.dart';
 import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
+import 'package:videodownloader/main.dart';
 import 'package:videodownloader/views/gallery_view.dart';
 
 class DownloadView extends StatefulWidget {
@@ -16,7 +17,7 @@ class DownloadView extends StatefulWidget {
 }
 
 class _DownloadViewState extends State<DownloadView> {
-  final imgUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  // final imgUrl =  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
   bool downloading = false;
   var progressString = "";
   late VideoPlayerController _controller;
@@ -61,7 +62,7 @@ class _DownloadViewState extends State<DownloadView> {
         child: Column(
           children: [
             SizedBox(
-              height: height * 0.55,
+              height: height * 0.57,
               child: Stack(
                 children: [
                   Positioned(
@@ -231,7 +232,7 @@ class _DownloadViewState extends State<DownloadView> {
 
   iconFb() {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         bloc!.launchFb();
       },
       child: Column(
@@ -243,7 +244,7 @@ class _DownloadViewState extends State<DownloadView> {
           ),
           const Text(
             'Facebook',
-            style:   TextStyle(color: Colors.black),
+            style: TextStyle(color: Colors.black),
           )
         ],
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -381,9 +382,12 @@ class _DownloadViewState extends State<DownloadView> {
                       Expanded(
                           child: GestureDetector(
                         onTap: () {
-                          bloc!.downloadFile(imgUrl);
+                          if(_urlController!.text.isEmpty){
+                            toast(context, 'Url can not empty');
+                            return;
+                          }
+                          bloc!.downloadFile(_urlController!.text);
                         },
-                        // onTap: () => bloc!.downloadFile( _urlController!.text),
                         child: Container(
                           margin: const EdgeInsets.fromLTRB(0, 0, 4, 8),
                           child: const Center(
@@ -422,7 +426,7 @@ class _DownloadViewState extends State<DownloadView> {
                       )),
                     ],
                   ),
-                  height: 56,
+                  height: 48,
                 )
               ],
             ),
@@ -479,7 +483,11 @@ class _DownloadViewState extends State<DownloadView> {
                 'Download Private Instagram Media',
                 style: TextStyle(color: Colors.black),
               )),
-              Checkbox(value: true, onChanged: (v) {})
+              Checkbox(
+                  value: false,
+                  onChanged: (v) {
+                    toast(context, 'Updating');
+                  })
             ],
           ),
           Row(
@@ -489,7 +497,11 @@ class _DownloadViewState extends State<DownloadView> {
                 'Download Facebook Story',
                 style: TextStyle(color: Colors.black),
               )),
-              Checkbox(value: true, onChanged: (v) {})
+              Checkbox(
+                  value: false,
+                  onChanged: (v) {
+                    toast(context, 'Updating');
+                  })
             ],
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/model/category/category.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/views/button_animation_color.dart';
+import 'package:videodownloader/views/language_view.dart';
 
 class CategoryView extends StatefulWidget {
   const CategoryView({Key? key}) : super(key: key);
@@ -94,7 +95,11 @@ class _CategoryViewState extends State<CategoryView> {
 
   buttonContinue() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const LanguageView(),
+        ));
+      },
       child: Container(
         width: 160,
         margin: const EdgeInsets.all(16),

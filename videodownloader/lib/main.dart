@@ -5,7 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/injection.dart';
 import 'package:videodownloader/views/download_view.dart';
 import 'package:videodownloader/views/splash_screen.dart';
-
+import 'package:toast/toast.dart';
 
 final flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
 
@@ -79,5 +79,15 @@ class MyApp extends StatelessWidget {
       home:const SplashScreen()
     );
   }
+}
+
+void toast(context, String message) {
+  Toast.show(
+    message,
+    context,
+    duration: 3,
+    backgroundColor: Colors.black54,
+    gravity: Toast.BOTTOM,
+  );
 }
 

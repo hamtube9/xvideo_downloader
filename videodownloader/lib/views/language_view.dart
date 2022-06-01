@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:videodownloader/bloc/main_bloc.dart';
+import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/model/category/category.dart';
 import 'package:videodownloader/views/button_animation_color.dart';
+import 'package:videodownloader/views/download_view.dart';
 
 class LanguageView extends StatefulWidget {
   const LanguageView({Key? key}) : super(key: key);
@@ -41,7 +44,11 @@ class _LanguageViewState extends State<LanguageView> {
 
   buttonContinue() {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => MainProvider(child: const DownloadView(),bloc: MainBloc()),
+        ));
+      },
       child: Container(
         width: 160,
         margin: const EdgeInsets.all(16),

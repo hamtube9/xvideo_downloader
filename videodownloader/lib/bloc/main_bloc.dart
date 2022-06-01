@@ -37,7 +37,7 @@ class MainBloc extends ChangeNotifier {
       return;
     }
     final dio = Dio();
-    final t = DateFormat('yyyy-MM-dd–kk:mm').format(DateTime.now()) ;
+    final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now()) ;
     var dir = await getExternalStorageDirectory();
 
     try {
@@ -54,7 +54,7 @@ class MainBloc extends ChangeNotifier {
     notifierDownload.value = false;
     // progressString = "Completed";
     print("Download completed");
-    showNotification(Random().nextInt(2212),'Download Success','$type  $type$t.$endpoint finished downloading','');
+    showNotification(Random().nextInt(2212),'Download Success','$type$t.$endpoint finished downloading','');
   }
 
   loginFb() async {

@@ -15,10 +15,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.3
+version: 1.0.4
 
 environment:
-  sdk: ">=2.16.2 <3.0.0"
+  sdk: ">=2.16.0 <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -54,6 +54,7 @@ dependencies:
   toast: ^0.1.5
   flutter_local_notifications: ^9.5.3+1
   clipboard: ^0.1.3
+  just_audio: ^0.9.24
 
 dev_dependencies:
   flutter_test:
@@ -86,6 +87,10 @@ flutter:
     - assets/images/xvideodownloader.png
     - assets/images/instagram.png
     - assets/images/facebook.png
+    - assets/images/audiofile.png
+    - assets/images/audiofile_grey.png
+    - assets/images/forward.png
+    - assets/images/reverse.png
     - assets/gif/gif_fb.gif
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -2,12 +2,12 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:videodownloader/bloc/gallery_bloc.dart';
 import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/utils/compare.dart';
-import 'package:videodownloader/views/play_video_view.dart';
+import 'package:videodownloader/views/play_media_view.dart';
+import 'package:videodownloader/views/tabbar_gallery_view.dart';
 
 class GalleryView extends StatefulWidget {
   const GalleryView({Key? key}) : super(key: key);
@@ -18,8 +18,6 @@ class GalleryView extends StatefulWidget {
 
 class _GalleryViewState extends State<GalleryView>
     with SingleTickerProviderStateMixin {
-
-  late TabController _tabController;
   GalleryBloc? bloc;
 
   @override
@@ -27,15 +25,7 @@ class _GalleryViewState extends State<GalleryView>
     super.initState();
     bloc = GalleryProvider.of(context);
     bloc!.loadFiles();
-    _tabController = TabController(
-      length: 4,
-      vsync: this,
-    )..addListener(() {
-        if (_tabController.indexIsChanging) {}
-      });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -46,42 +36,22 @@ class _GalleryViewState extends State<GalleryView>
       body: SafeArea(
         child: Column(
           children: [
-            Container(
-              margin: const EdgeInsets.fromLTRB(0, 0, 0, 16),
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.red,
-                onTap: (v){
-                  bloc!.onChangeList(v);
-                },
-                tabs: const [
-                  Tab(
-                      child: Text(
-                    'Gallery',
-                    style: TextStyle(color: Colors.black54),
-                  )),
-                  Tab(
-                      child: Text('Status Gallery',
-                          style: TextStyle(color: Colors.black54))),
-                  Tab(
-                      child: Text('Images',
-                          style: TextStyle(color: Colors.black54))),
-                  Tab(
-                      child: Text('Audios',
-                          style: TextStyle(color: Colors.black54))),
-                ],
-              ),
+            TabbarGalleryView(
+              onChangeTab: (v) {
+                bloc!.onChangeList(v);
+              },
             ),
             Expanded(
-              child:Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                child: ValueListenableBuilder<List<FileSystemEntity>?>(builder: (context, value, child) {
-                  if(value != null && value.isNotEmpty){
+                child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: ValueListenableBuilder<List<FileSystemEntity>?>(
+                builder: (context, value, child) {
+                  if (value != null && value.isNotEmpty) {
                     return GridView.builder(
-                        gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 4,
                             crossAxisSpacing: 8,
+                            mainAxisSpacing: 8,
                             childAspectRatio: (itemWidth / itemHeight)),
                         itemCount: value.length,
                         shrinkWrap: true,
@@ -93,10 +63,10 @@ class _GalleryViewState extends State<GalleryView>
                         });
                   }
                   return Container();
-                },valueListenable: bloc!.notifierFiles,
-                ),
-              )
-            )
+                },
+                valueListenable: bloc!.notifierFiles,
+              ),
+            ))
           ],
         ),
       ),
@@ -114,10 +84,10 @@ class _GalleryViewState extends State<GalleryView>
         },
         future: getVideoPath(item.path),
       );
-    } else if (checkConstainsString(item.path, ['mp3'])) {
-      return Text(item.path);
+    } else if (checkConstainsString(item.path, ['m4a', 'mp3', 'ogg', 'wav'])) {
+      return audioItem(item);
     } else if (checkConstainsString(item.path, ['png', 'jpeg', 'jpg'])) {
-      return Image.file(File(item.path));
+      return imageItem(item);
     }
 
     return Text(item.path);
@@ -168,16 +138,62 @@ class _GalleryViewState extends State<GalleryView>
         ));
   }
 
+  imageItem(FileSystemEntity item) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: Stack(
+        children: [
+          Positioned(
+            child: Container(
+              color: Colors.grey.shade200,
+            ),
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          ),
+          Positioned(
+            child: Image.file(File(item.path)),
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          ),
+        ],
+      ),
+    );
+  }
+
+  audioItem(FileSystemEntity item) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: Stack(
+        children: [
+          Positioned(
+            child: Container(
+              color: Colors.grey.shade200,
+            ),
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          ),
+          Positioned(
+            child: Image.asset('assets/images/audiofile.png' ),
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+          ),
+        ],
+      ),
+    );
+  }
+
   selectItem(FileSystemEntity item) {
-    if (checkConstainsString(item.path, ['mp4', 'mov'])) {
-      showDialog(
-          context: context,
-          builder: (context) => PlayVideoView(path: item.path),
-          useSafeArea: false);
-    } else if (checkConstainsString(item.path, ['mp3'])) {
-      return Text(item.path);
-    } else if (checkConstainsString(item.path, ['png', 'jpeg', 'jpg'])) {
-      return Image.file(File(item.path));
-    }
+    showDialog(
+        context: context,
+        builder: (context) => PlayMediaView(path: item.path),
+        useSafeArea: false);
   }
 }

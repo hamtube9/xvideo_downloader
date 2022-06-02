@@ -1,4 +1,4 @@
-
+// @dart=2.9
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -21,7 +21,7 @@ void main() {
 
 noti() {
   var initializationSettingsAndroid =
-    const AndroidInitializationSettings('@mipmap/icon_xvideo');
+    const AndroidInitializationSettings('@mipmap/icon_xvideo_foreground');
   var initializationSettingsIOS =   const IOSInitializationSettings();
   var initializationSettings =   InitializationSettings(
       android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
@@ -66,7 +66,7 @@ Future<void> showNotification(
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({Key key}) : super(key: key);
 
   // This widget is the root of your application.
   @override

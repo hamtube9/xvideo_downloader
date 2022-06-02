@@ -32,21 +32,24 @@ class MainBloc extends ChangeNotifier {
   Future<void> downloadFile(String url) async {
     String? endpoint = loadEnpoint(url);
     String? type = loadType(url);
+    var dir = await getExternalStorageDirectory();
+    final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now());
+    var path = "${dir!.path}/$type$t.$endpoint";
     if (notifierPermission.value == PermissionStatus.denied) {
       permission();
       return;
     }
     final dio = Dio();
-    final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now()) ;
-    var dir = await getExternalStorageDirectory();
 
     try {
-      await dio.download(url, "${dir!.path}/$type$t.$endpoint",
-          onReceiveProgress: (rec, total) {
+      await dio.download(url, path, onReceiveProgress: (rec, total) {
         notifierDownload.value = true;
         notifierProgress.value = ((rec / total) * 100);
         print(((rec / total) * 100).toStringAsFixed(0) + "%");
         // notifierProgress.value = ((rec / total) * 100).toStringAsFixed(0) + "%";
+      }).whenComplete(() {
+        showNotification(Random().nextInt(2212), 'Download Success',
+            '$type$t.$endpoint finished downloading', '');
       });
     } catch (e) {
       print(e);
@@ -54,7 +57,6 @@ class MainBloc extends ChangeNotifier {
     notifierDownload.value = false;
     // progressString = "Completed";
     print("Download completed");
-    showNotification(Random().nextInt(2212),'Download Success','$type$t.$endpoint finished downloading','');
   }
 
   loginFb() async {
@@ -136,6 +138,8 @@ class MainBloc extends ChangeNotifier {
       return returnEnpoint(url, ['mp4', 'mov']);
     } else if (checkConstainsString(url, ['jpeg', 'jpg', 'png'])) {
       return returnEnpoint(url, ['jpeg', 'jpg', 'png']);
+    } else if (checkConstainsString(url, ['m4a', 'mp3', 'ogg', 'wav'])) {
+      return returnEnpoint(url, ['m4a', 'mp3', 'ogg', 'wav']);
     }
     return '';
   }
@@ -147,15 +151,14 @@ class MainBloc extends ChangeNotifier {
     return null;
   }
 
-
   String? loadType(String url) {
     if (checkConstainsString(url, ['mp4', 'mov'])) {
       return 'vid';
     } else if (checkConstainsString(url, ['jpeg', 'jpg', 'png'])) {
       return 'image';
+    } else if (checkConstainsString(url, ['m4a', 'mp3', 'ogg', 'wav'])) {
+      return 'aud';
     }
     return '';
   }
-
-
 }

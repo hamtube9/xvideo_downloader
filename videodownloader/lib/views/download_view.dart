@@ -38,11 +38,6 @@ class _DownloadViewState extends State<DownloadView> {
     _focusSearch = FocusNode();
     _searchController = TextEditingController();
     _urlController = TextEditingController();
-    _controller = VideoPlayerController.network(
-        'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4')
-      ..initialize().then((_) {
-        setState(() {});
-      });
     // permission();
   }
 
@@ -54,6 +49,14 @@ class _DownloadViewState extends State<DownloadView> {
     });
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _focusSearch?.dispose();
+    _searchController?.dispose();
+    _urlController?.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -67,13 +70,7 @@ class _DownloadViewState extends State<DownloadView> {
               child: Stack(
                 children: [
                   Positioned(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(60),
-                              bottomRight: Radius.circular(60))),
-                    ),
+                    child:backgroundBlack(),
                     height: height * 0.45,
                     top: 0,
                     right: 0,
@@ -221,7 +218,7 @@ class _DownloadViewState extends State<DownloadView> {
             width: 40,
           ),
           const Text(
-            'Facebook',
+            'Support',
             style: TextStyle(color: Colors.black),
           )
         ],
@@ -601,6 +598,16 @@ class _DownloadViewState extends State<DownloadView> {
                 spreadRadius: 2,
                 blurRadius: 2)
           ]),
+    );
+  }
+
+  backgroundBlack() {
+    return  Container(
+      decoration: const BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(60),
+              bottomRight: Radius.circular(60))),
     );
   }
 }

@@ -4,4 +4,10 @@
     <string name="fb_login_protocol_scheme">fb357485149859070</string>
     <string name="facebook_client_token">56789</string>
     <string name="app_name">XVideo Downloader</string>
+    <string name="flutter_downloader_notification_started">Download started</string>
+    <string name="flutter_downloader_notification_in_progress">Download in progress</string>
+    <string name="flutter_downloader_notification_canceled">Download canceled</string>
+    <string name="flutter_downloader_notification_failed">Download failed</string>
+    <string name="flutter_downloader_notification_complete">Download complete</string>
+    <string name="flutter_downloader_notification_paused">Download paused</string>
 </resources>

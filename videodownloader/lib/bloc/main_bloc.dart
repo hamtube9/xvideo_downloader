@@ -3,8 +3,10 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
+import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+// import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:http/http.dart';
@@ -13,12 +15,18 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:videodownloader/main.dart';
+import 'package:videodownloader/services/download_service.dart';
 import 'package:videodownloader/utils/compare.dart';
 import 'package:videodownloader/utils/constants.dart';
-
 import '../model/token.dart';
 
 class MainBloc extends ChangeNotifier {
+  final DownloadService service;
+
+  MainBloc({
+    required this.service,
+  });
+
   static const defaultPlatform =
       MethodChannel('ngaoschos.videodownloader/insta');
 
@@ -29,19 +37,44 @@ class MainBloc extends ChangeNotifier {
 
   ValueNotifier<String?> tokenIg = ValueNotifier<String?>(null);
 
+  Future getUrlDownload(String url) async {
+    // var res = await service.getUrlVideo(url);
+    // if(res!.output != null){
+    //   downloadFile(res.output!);
+    // }
+    downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
+  }
+
   Future<void> downloadFile(String url) async {
+    url = "https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481";
     String? endpoint = loadEnpoint(url);
     String? type = loadType(url);
     var dir = await getExternalStorageDirectory();
     final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now());
     var path = "${dir!.path}/$type$t.$endpoint";
-    if (notifierPermission.value == PermissionStatus.denied) {
+    var exist = await File(path).exists();
+    if(exist){
+      path =  "${dir.path}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
+    }
+    if (notifierPermission.value == null || await  permission() == false) {
       permission();
       return;
     }
     final dio = Dio();
 
     try {
+      //  await FlutterDownloader.enqueue(
+      //   url: url,
+      //   savedDir: path,
+      //   saveInPublicStorage: true,
+      //   showNotification: true, // show download progress in status bar (for Android)
+      //   openFileFromNotification: true, // click on notification to open downloaded file (for Android)
+      // );
+      // FlutterDownloader.registerCallback((id, status,progress) {
+      //   print(
+      //       'Download task ($id) is in status ($status) and process ($progress)');
+      // });
+
       await dio.download(url, path, onReceiveProgress: (rec, total) {
         notifierDownload.value = true;
         notifierProgress.value = ((rec / total) * 100);
@@ -50,6 +83,7 @@ class MainBloc extends ChangeNotifier {
       }).whenComplete(() {
         showNotification(Random().nextInt(2212), 'Download Success',
             '$type$t.$endpoint finished downloading', '');
+     notifierDownload.value = false;
       });
     } catch (e) {
       print(e);
@@ -65,7 +99,7 @@ class MainBloc extends ChangeNotifier {
     print(result.accessToken!.token);
   }
 
-  permission() async {
+  Future<bool> permission() async {
     var s = await Permission.storage.status;
     if (notifierPermission.value == null) {
       notifierPermission.value = s;
@@ -74,7 +108,10 @@ class MainBloc extends ChangeNotifier {
       var a = await Permission.storage.request();
       notifierPermission.value = a;
     }
+    return s.isGranted;
   }
+
+
 
   loginInsta() async {
     String url =

@@ -57,6 +57,7 @@ class _DownloadViewState extends State<DownloadView> {
     _searchController?.dispose();
     _urlController?.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -70,7 +71,7 @@ class _DownloadViewState extends State<DownloadView> {
               child: Stack(
                 children: [
                   Positioned(
-                    child:backgroundBlack(),
+                    child: backgroundBlack(),
                     height: height * 0.45,
                     top: 0,
                     right: 0,
@@ -97,6 +98,40 @@ class _DownloadViewState extends State<DownloadView> {
                   ),
                 ],
               ),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: bloc!.notifierDownload,
+              builder: (BuildContext context, bool value, Widget? child) {
+                return value
+                    ? ValueListenableBuilder<double>(
+                        valueListenable: bloc!.notifierProgress,
+                        builder: (c, v, _) {
+                          print(v);
+                          return Container(
+                            child: Stack(
+                              children: [
+                                Positioned(child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: LinearProgressIndicator(
+                                    value: v / 100.0,
+                                    color: Colors.white,
+                                    valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.green),
+                                  ),
+                                ),top: 0,right: 0,bottom: 0,left: 0,),
+                                Center(child: Text((v).toStringAsFixed(0) + "%"),)
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black,width: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                            height: 24,
+                          );
+                        })
+                    : Container();
+              },
             ),
             private_media(),
             fb_stories()
@@ -392,7 +427,7 @@ class _DownloadViewState extends State<DownloadView> {
                             toast(context, 'Url can not empty');
                             return;
                           }
-                          bloc!.downloadFile(_urlController!.text);
+                          bloc!.getUrlDownload(_urlController!.text);
                         },
                         child: Container(
                           margin: const EdgeInsets.fromLTRB(0, 0, 4, 8),
@@ -602,7 +637,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   backgroundBlack() {
-    return  Container(
+    return Container(
       decoration: const BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.only(

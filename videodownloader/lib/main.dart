@@ -1,5 +1,6 @@
 // @dart=2.9
 import 'package:flutter/material.dart';
+// import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/injection.dart';
@@ -19,7 +20,12 @@ void main() {
   runApp(const MyApp());
 }
 
-noti() {
+noti() async {
+  // await FlutterDownloader.initialize(
+  //     debug: true, // optional: set to false to disable printing logs to console (default: true)
+  //     ignoreSsl: true // option: set to false to disable working with http links (default: false)
+  // );
+
   var initializationSettingsAndroid =
     const AndroidInitializationSettings('@mipmap/icon_xvideo_foreground');
   var initializationSettingsIOS =   const IOSInitializationSettings();

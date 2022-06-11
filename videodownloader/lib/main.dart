@@ -71,6 +71,30 @@ Future<void> showNotification(
   );
 }
 
+
+showProgress (int maxProgress, int progress) async {
+  final AndroidNotificationDetails androidPlatformChannelSpecifics =
+  AndroidNotificationDetails('progress channel', 'progress channel',
+      channelDescription: 'progress channel description',
+      channelShowBadge: false,
+      importance: Importance.max,
+      priority: Priority.high,
+      onlyAlertOnce: true,
+      showProgress: true,
+      maxProgress: maxProgress,
+      progress: progress);
+  final NotificationDetails platformChannelSpecifics =
+  NotificationDetails(android: androidPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+      0,
+      'progress notification title',
+      'progress notification body',
+      platformChannelSpecifics,
+      payload: 'item x');
+}
+
+
+
 class MyApp extends StatelessWidget {
   const MyApp({Key key}) : super(key: key);
 

@@ -38,15 +38,17 @@ class MainBloc extends ChangeNotifier {
   ValueNotifier<String?> tokenIg = ValueNotifier<String?>(null);
 
   Future getUrlDownload(String url) async {
-    // var res = await service.getUrlVideo(url);
-    // if(res!.output != null){
-    //   downloadFile(res.output!);
-    // }
-    downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
+    if(await permission()){
+      var res = await service.getUrlVideo(url);
+      if(res!.output != null && res.output!.isNotEmpty){
+        downloadFile(res.output!);
+      }
+    }
+
+    // downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
   }
 
   Future<void> downloadFile(String url) async {
-    url = "https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481";
     String? endpoint = loadEnpoint(url);
     String? type = loadType(url);
     var dir = await getExternalStorageDirectory();
@@ -55,10 +57,6 @@ class MainBloc extends ChangeNotifier {
     var exist = await File(path).exists();
     if(exist){
       path =  "${dir.path}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
-    }
-    if (notifierPermission.value == null || await  permission() == false) {
-      permission();
-      return;
     }
     final dio = Dio();
 
@@ -79,6 +77,7 @@ class MainBloc extends ChangeNotifier {
         notifierDownload.value = true;
         notifierProgress.value = ((rec / total) * 100);
         print(((rec / total) * 100).toStringAsFixed(0) + "%");
+        showProgress(100,((rec / total) * 100).toInt());
         // notifierProgress.value = ((rec / total) * 100).toStringAsFixed(0) + "%";
       }).whenComplete(() {
         showNotification(Random().nextInt(2212), 'Download Success',
@@ -107,6 +106,7 @@ class MainBloc extends ChangeNotifier {
     if (!s.isGranted) {
       var a = await Permission.storage.request();
       notifierPermission.value = a;
+      return a.isGranted;
     }
     return s.isGranted;
   }

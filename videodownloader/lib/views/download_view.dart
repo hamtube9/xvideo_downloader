@@ -106,7 +106,6 @@ class _DownloadViewState extends State<DownloadView> {
                     ? ValueListenableBuilder<double>(
                         valueListenable: bloc!.notifierProgress,
                         builder: (c, v, _) {
-                          print(v);
                           return Container(
                             child: Stack(
                               children: [
@@ -119,7 +118,7 @@ class _DownloadViewState extends State<DownloadView> {
                                     AlwaysStoppedAnimation<Color>(Colors.green),
                                   ),
                                 ),top: 0,right: 0,bottom: 0,left: 0,),
-                                Center(child: Text((v).toStringAsFixed(0) + "%"),)
+                                Center(child: Text("Downloading "+ (v).toStringAsFixed(0) + "%"),)
                               ],
                             ),
                             decoration: BoxDecoration(
@@ -427,7 +426,12 @@ class _DownloadViewState extends State<DownloadView> {
                             toast(context, 'Url can not empty');
                             return;
                           }
+                          if(bloc!.notifierDownload.value == true){
+                            toast(context, 'Wait for finish download');
+                            return;
+                          }
                           bloc!.getUrlDownload(_urlController!.text);
+                          _urlController!.clear();
                         },
                         child: Container(
                           margin: const EdgeInsets.fromLTRB(0, 0, 4, 8),

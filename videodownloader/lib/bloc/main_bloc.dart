@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:downloads_path_provider/downloads_path_provider.dart';
+import 'package:ext_storage/ext_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
@@ -48,15 +49,17 @@ class MainBloc extends ChangeNotifier {
     // downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
   }
 
+
+
   Future<void> downloadFile(String url) async {
     String? endpoint = loadEnpoint(url);
     String? type = loadType(url);
-    var dir = await getExternalStorageDirectory();
+    var dir = await getPathToDownload();
     final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now());
-    var path = "${dir!.path}/$type$t.$endpoint";
+    var path = "${dir}/$type$t.$endpoint";
     var exist = await File(path).exists();
     if(exist){
-      path =  "${dir.path}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
+      path =  "${dir}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
     }
     final dio = Dio();
 

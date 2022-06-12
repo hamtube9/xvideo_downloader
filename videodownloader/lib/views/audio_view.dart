@@ -45,7 +45,6 @@ class _AudioViewState extends State<AudioView>
       print(currentDuration);
       if(mounted){
         setState(() => currentTime = getDuration(currentDuration));
-
       }
     });
     _audioPlayer!.playerStateStream.listen((state) {

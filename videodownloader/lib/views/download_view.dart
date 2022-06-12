@@ -430,7 +430,7 @@ class _DownloadViewState extends State<DownloadView> {
                             toast(context, 'Wait for finish download');
                             return;
                           }
-                          bloc!.getUrlDownload("https://www.xvideos.com/video35033155/beautiful_japanesegirl_-_nanairo.co");
+                          bloc!.getUrlDownload(_urlController!.text);
                           _urlController!.clear();
                         },
                         child: Container(

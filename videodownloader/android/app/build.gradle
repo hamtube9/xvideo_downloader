@@ -13,12 +13,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '4'
+    flutterVersionCode = '6'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0.4'
+    flutterVersionName = '1.0.6'
 }
 
 apply plugin: 'com.android.application'
@@ -68,12 +68,12 @@ android {
             keyPassword 'Thuy1502'
         }
 
-        debug {
-            storeFile file('keystore\\ngaoschos.keystore')
-            storePassword 'Thuy1502'
-            keyAlias 'ngaoschos'
-            keyPassword 'Thuy1502'
-        }
+//        debug {
+//            storeFile file('keystore\\ngaoschos.keystore')
+//            storePassword 'Thuy1502'
+//            keyAlias 'ngaoschos'
+//            keyPassword 'Thuy1502'
+//        }
     }
 }
 

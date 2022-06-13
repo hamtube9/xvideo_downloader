@@ -41,7 +41,7 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
 
   void _createInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: AdsHelper.interstitialAdUnitId,
+      adUnitId: AdsHelper.loadingAdUnitId,
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (InterstitialAd ad) {

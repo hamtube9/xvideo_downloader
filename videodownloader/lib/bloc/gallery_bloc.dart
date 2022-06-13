@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:videodownloader/utils/compare.dart';
+import 'package:videodownloader/utils/constants.dart';
 
 class GalleryBloc extends ChangeNotifier {
   ValueNotifier<List<FileSystemEntity>?> notifierFiles =
@@ -14,8 +15,8 @@ class GalleryBloc extends ChangeNotifier {
   List<FileSystemEntity>? listAudio;
 
   void loadFiles() async {
-    var directory = (await getExternalStorageDirectory())!.path;
-    var list = Directory("$directory").listSync();
+    var directory = (await getPathToDownload());
+    var list = Directory(directory).listSync();
     notifierFiles.value = list;
     listAll = list;
     listVideo = list

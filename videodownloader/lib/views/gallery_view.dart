@@ -2,9 +2,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:videodownloader/bloc/gallery_bloc.dart';
 import 'package:videodownloader/bloc/gallery_provider.dart';
+import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/compare.dart';
 import 'package:videodownloader/views/play_media_view.dart';
 import 'package:videodownloader/views/tabbar_gallery_view.dart';
@@ -16,61 +18,93 @@ class GalleryView extends StatefulWidget {
   State<GalleryView> createState() => _GalleryViewState();
 }
 
-class _GalleryViewState extends State<GalleryView>
-    with SingleTickerProviderStateMixin {
+class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStateMixin {
   GalleryBloc? bloc;
+
+  BannerAd? _bottomBanner;
+  bool _isBottomBannerLoaded = false;
+
+  void initBottomBanner() async {
+    _bottomBanner = BannerAd(
+        size: AdSize.banner,
+        adUnitId: AdsHelper.bannerAdUtilId,
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            print("loadedddddddddddddddd");
+            setState(() {
+              _isBottomBannerLoaded = true;
+            });
+          },
+          onAdFailedToLoad: (ad, err) {
+            print(err);
+            _bottomBanner!.dispose();
+            _bottomBanner = null;
+          },
+        ),
+        request: const AdRequest());
+    await _bottomBanner!.load();
+  }
 
   @override
   void initState() {
     super.initState();
     bloc = GalleryProvider.of(context);
     bloc!.loadFiles();
+    initBottomBanner();
   }
 
   @override
   Widget build(BuildContext context) {
-    double itemHeight =
-        (MediaQuery.of(context).size.height - kToolbarHeight - 24) / 4;
+    double itemHeight = (MediaQuery.of(context).size.height - kToolbarHeight - 24) / 4;
     double itemWidth = MediaQuery.of(context).size.width / 4;
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            TabbarGalleryView(
-              onChangeTab: (v) {
-                bloc!.onChangeList(v);
-              },
-            ),
-            Expanded(
-                child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: ValueListenableBuilder<List<FileSystemEntity>?>(
-                builder: (context, value, child) {
-                  if (value != null && value.isNotEmpty) {
-                    return GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            crossAxisSpacing: 8,
-                            mainAxisSpacing: 8,
-                            childAspectRatio: (itemWidth / itemHeight)),
-                        itemCount: value.length,
-                        shrinkWrap: true,
-                        itemBuilder: (BuildContext context, int i) {
-                          return GestureDetector(
-                            child: item(value[i]),
-                            onTap: () => selectItem(value[i]),
-                          );
-                        });
-                  }
-                  return Container();
+        body: SafeArea(
+          child: Column(
+            children: [
+              TabbarGalleryView(
+                onChangeTab: (v) {
+                  bloc!.onChangeList(v);
                 },
-                valueListenable: bloc!.notifierFiles,
               ),
-            ))
-          ],
+              Expanded(
+                  child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: ValueListenableBuilder<List<FileSystemEntity>?>(
+                  builder: (context, value, child) {
+                    if (value != null && value.isNotEmpty) {
+                      return GridView.builder(
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                              childAspectRatio: (itemWidth / itemHeight)),
+                          itemCount: value.length,
+                          shrinkWrap: true,
+                          itemBuilder: (BuildContext context, int i) {
+                            return GestureDetector(
+                              child: item(value[i]),
+                              onTap: () => selectItem(value[i]),
+                            );
+                          });
+                    }
+                    return Container();
+                  },
+                  valueListenable: bloc!.notifierFiles,
+                ),
+              ))
+            ],
+          ),
         ),
-      ),
-    );
+        bottomNavigationBar: _isBottomBannerLoaded
+            ? Container(
+                child: AdWidget(
+                  ad: _bottomBanner!,
+                ),
+                height: _bottomBanner!.size.height.toDouble(),
+                width: _bottomBanner!.size.width.toDouble(),
+                alignment: Alignment.center,
+              )
+            : Container());
   }
 
   item(FileSystemEntity item) {
@@ -179,7 +213,7 @@ class _GalleryViewState extends State<GalleryView>
             left: 0,
           ),
           Positioned(
-            child: Image.asset('assets/images/audiofile.png' ),
+            child: Image.asset('assets/images/audiofile.png'),
             top: 0,
             right: 0,
             bottom: 0,
@@ -192,8 +226,6 @@ class _GalleryViewState extends State<GalleryView>
 
   selectItem(FileSystemEntity item) {
     showDialog(
-        context: context,
-        builder: (context) => PlayMediaView(path: item.path),
-        useSafeArea: false);
+        context: context, builder: (context) => PlayMediaView(path: item.path), useSafeArea: false);
   }
 }

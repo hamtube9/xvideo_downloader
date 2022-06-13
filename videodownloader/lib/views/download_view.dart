@@ -1,6 +1,7 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 import 'package:videodownloader/bloc/gallery_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/main.dart';
+import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/views/gallery_view.dart';
 
 class DownloadView extends StatefulWidget {
@@ -18,7 +20,6 @@ class DownloadView extends StatefulWidget {
 }
 
 class _DownloadViewState extends State<DownloadView> {
-  // final imgUrl =  "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
   bool downloading = false;
   var progressString = "";
   late VideoPlayerController _controller;
@@ -31,6 +32,12 @@ class _DownloadViewState extends State<DownloadView> {
   TextEditingController? _urlController;
   MainBloc? bloc;
 
+
+  BannerAd? _bottomBanner;
+  bool _isBottomBannerLoaded = false;
+
+
+
   @override
   void initState() {
     super.initState();
@@ -39,7 +46,32 @@ class _DownloadViewState extends State<DownloadView> {
     _searchController = TextEditingController();
     _urlController = TextEditingController();
     // permission();
+    initBottomBanner();
+
   }
+
+  void initBottomBanner() async {
+    _bottomBanner = BannerAd(
+        size: AdSize.banner,
+        adUnitId: AdsHelper.bannerAdUtilId,
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            print("loadedddddddddddddddd");
+            setState(() {
+              _isBottomBannerLoaded = true;
+            });
+          },
+          onAdFailedToLoad: (ad, err) {
+            print(err);
+            _bottomBanner!.dispose();
+            _bottomBanner = null;
+          },
+        ),
+        request: const AdRequest());
+
+    await _bottomBanner!.load();
+  }
+
 
   autoHideButton() {
     Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
@@ -57,6 +89,7 @@ class _DownloadViewState extends State<DownloadView> {
     _searchController?.dispose();
     _urlController?.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -70,7 +103,7 @@ class _DownloadViewState extends State<DownloadView> {
               child: Stack(
                 children: [
                   Positioned(
-                    child:backgroundBlack(),
+                    child: backgroundBlack(),
                     height: height * 0.45,
                     top: 0,
                     right: 0,
@@ -98,8 +131,51 @@ class _DownloadViewState extends State<DownloadView> {
                 ],
               ),
             ),
-            private_media(),
-            fb_stories()
+            ValueListenableBuilder<bool>(
+              valueListenable: bloc!.notifierDownload,
+              builder: (BuildContext context, bool value, Widget? child) {
+                return value
+                    ? ValueListenableBuilder<double>(
+                        valueListenable: bloc!.notifierProgress,
+                        builder: (c, v, _) {
+                          return Container(
+                            child: Stack(
+                              children: [
+                                Positioned(child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: LinearProgressIndicator(
+                                    value: v / 100.0,
+                                    color: Colors.white,
+                                    valueColor:
+                                    const AlwaysStoppedAnimation<Color>(Colors.green),
+                                  ),
+                                ),top: 0,right: 0,bottom: 0,left: 0,),
+                                Center(child: Text("Downloading "+ (v).toStringAsFixed(0) + "%"),)
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black,width: 0.5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                            height: 24,
+                          );
+                        })
+                    : Container();
+              },
+            ),
+            privateMedia(),
+            fbStories(),
+          _isBottomBannerLoaded
+              ? Container(
+            child: AdWidget(
+              ad: _bottomBanner!,
+            ),
+            height: _bottomBanner!.size.height.toDouble(),
+            width: _bottomBanner!.size.width.toDouble(),
+            alignment: Alignment.center,
+          )
+              : Container()
           ],
         ),
       ),
@@ -111,120 +187,31 @@ class _DownloadViewState extends State<DownloadView> {
     _focusSearch!.unfocus();
   }
 
-  alo() {
-    return Center(
-      child: downloading
-          ? SizedBox(
-              height: 120.0,
-              width: 200.0,
-              child: Card(
-                color: Colors.black,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const CircularProgressIndicator(),
-                    const SizedBox(
-                      height: 20.0,
-                    ),
-                    Text(
-                      "Downloading File: $progressString",
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            )
-          : Column(
-              children: [
-                Expanded(
-                    child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _controller.value.isInitialized
-                          ? AspectRatio(
-                              aspectRatio: _controller.value.aspectRatio,
-                              child: Stack(
-                                children: [
-                                  GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          isShowButton = !isShowButton;
-                                        });
-                                        autoHideButton();
-                                      },
-                                      child: VideoPlayer(_controller)),
-                                  isShowButton
-                                      ? Center(
-                                          child: GestureDetector(
-                                            onTap: () async {
-                                              setState(() {
-                                                isPlaying = !isPlaying;
-                                              });
-                                              if (isPlaying) {
-                                                await _controller.play();
-                                              } else {
-                                                _controller.pause();
-                                              }
-                                              autoHideButton();
-                                            },
-                                            child: Icon(
-                                              isPlaying
-                                                  ? Icons.pause
-                                                  : Icons.play_arrow,
-                                              size: 48,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        )
-                                      : const Center()
-                                ],
-                              ),
-                            )
-                          : Container(),
-                      TextButton(
-                          onPressed: () {
-                            // downloadFile();
-                          },
-                          child: const Text(
-                            'download',
-                            style: TextStyle(color: Colors.black26),
-                          ))
-                    ],
-                  ),
-                ))
-              ],
-            ),
-    );
-  }
 
   iconSupport() {
-    return Container(
-      child: Column(
-        children: [
-          Container(
-            child: const Center(
-              child: Icon(
-                Icons.more_horiz,
-                color: Colors.white,
-                size: 24,
-              ),
+    return Column(
+      children: [
+        Container(
+          child: const Center(
+            child: Icon(
+              Icons.more_horiz,
+              color: Colors.white,
+              size: 24,
             ),
-            decoration: BoxDecoration(
-                color: Colors.deepPurple,
-                borderRadius: BorderRadius.circular(16)),
-            height: 40,
-            width: 40,
           ),
-          const Text(
-            'Support',
-            style: TextStyle(color: Colors.black),
-          )
-        ],
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-      ),
+          decoration: BoxDecoration(
+              color: Colors.deepPurple,
+              borderRadius: BorderRadius.circular(16)),
+          height: 40,
+          width: 40,
+        ),
+        const Text(
+          'Support',
+          style: TextStyle(color: Colors.black),
+        )
+      ],
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
     );
   }
 
@@ -265,7 +252,7 @@ class _DownloadViewState extends State<DownloadView> {
           ),
           const Text(
             'Instagram',
-            style: const TextStyle(color: Colors.black),
+            style: TextStyle(color: Colors.black),
           )
         ],
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -392,7 +379,12 @@ class _DownloadViewState extends State<DownloadView> {
                             toast(context, 'Url can not empty');
                             return;
                           }
-                          bloc!.downloadFile(_urlController!.text);
+                          if(bloc!.notifierDownload.value == true){
+                            toast(context, 'Wait for finish download');
+                            return;
+                          }
+                          bloc!.getUrlDownload(_urlController!.text);
+                          _urlController!.clear();
                         },
                         child: Container(
                           margin: const EdgeInsets.fromLTRB(0, 0, 4, 8),
@@ -412,7 +404,7 @@ class _DownloadViewState extends State<DownloadView> {
                         onTap: () {
                           Navigator.of(context).push(MaterialPageRoute(
                             builder: (context) => GalleryProvider(
-                              child: GalleryView(),
+                              child: const GalleryView(),
                               bloc: GalleryBloc(),
                             ),
                           ));
@@ -471,7 +463,7 @@ class _DownloadViewState extends State<DownloadView> {
     );
   }
 
-  private_media() {
+  privateMedia() {
     return Container(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
       margin: const EdgeInsets.all(16),
@@ -526,7 +518,7 @@ class _DownloadViewState extends State<DownloadView> {
     );
   }
 
-  fb_stories() {
+  fbStories() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
@@ -602,7 +594,7 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   backgroundBlack() {
-    return  Container(
+    return Container(
       decoration: const BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.only(

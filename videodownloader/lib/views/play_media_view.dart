@@ -41,19 +41,27 @@ class _PlayMediaViewState extends State<PlayMediaView> {
     return Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
           children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: Container(
-                  margin: const EdgeInsets.all(16),
-                  child: const Icon(Icons.arrow_back,
-                      size: 24, color: Colors.white)),
+            Positioned(
+              child: content(),
+              top: 0,
+              right: 0,
+              left: 0,
+              bottom: 0,
             ),
-            Expanded(child: content())
+            Positioned(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pop();
+                },
+                child: Container(
+                    margin: const EdgeInsets.all(16),
+                    child: const Icon(Icons.arrow_back, size: 24, color: Colors.white)),
+              ),
+              top: 0,
+              left: 0,
+            )
           ],
         )));
   }

@@ -10,13 +10,17 @@ import android.os.Bundle
 import android.util.Base64
 import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugins.GeneratedPluginRegistrant
+import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
 class MainActivity: FlutterActivity() {
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +29,22 @@ class MainActivity: FlutterActivity() {
         methodInstagram()
 
     }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+
+        // COMPLETE: Register the ListTileNativeAdFactory
+        GoogleMobileAdsPlugin.registerNativeAdFactory(
+                flutterEngine, "listTile", ListTileNativeAdFactory(context))
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        super.cleanUpFlutterEngine(flutterEngine)
+
+        // COMPLETE: Unregister the ListTileNativeAdFactory
+        GoogleMobileAdsPlugin.unregisterNativeAdFactory(flutterEngine, "listTile")
+    }
+
 
     fun methodInstagram() {
         MethodChannel(this.flutterEngine!!.dartExecutor, "ngaoschos.videodownloader/insta").setMethodCallHandler { call, result ->

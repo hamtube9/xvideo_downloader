@@ -1,4 +1,5 @@
 // @dart=2.9
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -10,7 +11,7 @@ import 'package:videodownloader/views/download_view.dart';
 import 'package:videodownloader/views/splash_screen.dart';
 import 'package:toast/toast.dart';
 
-final flutterLocalNotificationsPlugin =   FlutterLocalNotificationsPlugin();
+final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +24,11 @@ void main() {
 
 _initAds() async {
   await MobileAds.instance.initialize();
-  RequestConfiguration configuration =
-      RequestConfiguration(testDeviceIds: ["46DECB1F2A9447C179291DE2970A74CB"]);
-  MobileAds.instance.updateRequestConfiguration(configuration);
+  if (kDebugMode) {
+    RequestConfiguration configuration =
+        RequestConfiguration(testDeviceIds: ["46DECB1F2A9447C179291DE2970A74CB"]);
+    MobileAds.instance.updateRequestConfiguration(configuration);
+  }
 }
 
 noti() async {
@@ -109,8 +112,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-
 void toast(context, String message) {
   Toast.show(
     message,
@@ -120,7 +121,6 @@ void toast(context, String message) {
     gravity: Toast.BOTTOM,
   );
 }
-
 
 void showLoading() {
   EasyLoading.show(maskType: EasyLoadingMaskType.black);

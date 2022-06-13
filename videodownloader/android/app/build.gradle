@@ -86,4 +86,6 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation platform('com.google.firebase:firebase-bom:30.0.2')
     implementation 'com.google.firebase:firebase-analytics'
+    implementation project(path: ':google_mobile_ads')
+//    implementation 'com.google.android.gms:play-services-ads:21.0.0'
 }

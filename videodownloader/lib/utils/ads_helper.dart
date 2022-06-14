@@ -26,4 +26,16 @@ class AdsHelper{
       throw UnsupportedError('Unsupport platform');
     }
   }
+
+
+  static String get loadingOriginId{
+    if(Platform.isAndroid){
+      return "ca-app-pub-7047183990898007/6581666087";
+    }else if(Platform.isIOS){
+      return "ca-app-pub-7047183990898007/5910678286";
+    }
+    else{
+      throw UnsupportedError('Unsupport platform');
+    }
+  }
 }

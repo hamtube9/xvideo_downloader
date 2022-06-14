@@ -60,12 +60,12 @@ android {
             keyPassword 'Thuy1502'
         }
 
-        debug {
-            storeFile file('keystore\\ngaoschos.keystore')
-            storePassword 'Thuy1502'
-            keyAlias 'ngaoschos'
-            keyPassword 'Thuy1502'
-        }
+//        debug {
+//            storeFile file('keystore\\ngaoschos.keystore')
+//            storePassword 'Thuy1502'
+//            keyAlias 'ngaoschos'
+//            keyPassword 'Thuy1502'
+//        }
     }
 
     buildTypes {

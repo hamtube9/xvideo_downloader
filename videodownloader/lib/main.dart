@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/injection.dart';
 import 'package:videodownloader/views/download_view.dart';
+import 'package:videodownloader/views/introduce_view.dart';
 import 'package:videodownloader/views/splash_screen.dart';
 import 'package:toast/toast.dart';
 
@@ -26,7 +27,7 @@ _initAds() async {
   await MobileAds.instance.initialize();
   if (kDebugMode) {
     RequestConfiguration configuration =
-        RequestConfiguration(testDeviceIds: ["46DECB1F2A9447C179291DE2970A74CB"]);
+        RequestConfiguration(testDeviceIds: ["A7454E1FD0E87DA10E30B70108A75C62"]);
     MobileAds.instance.updateRequestConfiguration(configuration);
   }
 }

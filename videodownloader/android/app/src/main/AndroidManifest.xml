@@ -1,5 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="ngaoschos.videodownloader">
+    package="ngaoschos.videodownloader"
+    xmlns:tools="http://schemas.android.com/tools"
+    >
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -78,5 +80,8 @@
        <meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
            android:value="ca-app-pub-7047183990898007~6727742994"/>
+
+
+
     </application>
 </manifest>

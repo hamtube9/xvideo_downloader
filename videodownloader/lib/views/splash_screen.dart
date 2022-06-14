@@ -4,6 +4,7 @@ import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/views/download_view.dart';
 import 'package:videodownloader/views/gender_view.dart';
+import 'package:videodownloader/views/introduce_view.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(milliseconds: 3000)).whenComplete(() {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) =>const GenderView()),
+        builder: (context) =>const IntroduceView()),
       );
     });
   }

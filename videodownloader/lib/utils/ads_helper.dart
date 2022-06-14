@@ -30,7 +30,7 @@ class AdsHelper{
 
   static String get loadingOriginId{
     if(Platform.isAndroid){
-      return "ca-app-pub-7047183990898007/6581666087";
+      return "ca-app-pub-7047183990898007/4730099184";
     }else if(Platform.isIOS){
       return "ca-app-pub-7047183990898007/5910678286";
     }

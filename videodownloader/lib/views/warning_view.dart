@@ -21,15 +21,39 @@ class _WarningViewState extends State<WarningView> {
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
+  bool _isNativeAdLoaded = false;
+  NativeAd? _nativeAd;
 
   @override
   void initState() {
     super.initState();
-    initBottomBanner();
-    initLoadingAd();
+    Future.wait([
+      initBottomBanner(),
+      initLoadingAd(),
+      initNativeAds(),
+    ]);
   }
 
-  void initLoadingAd() async {
+  Future initNativeAds() async {
+    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+        factoryId: 'listTile',
+        listener: NativeAdListener(
+            onAdLoaded: (ad) {
+              setState(() {
+                _isNativeAdLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) {
+              print(err);
+              ad.dispose();
+            }
+        ),
+        request: const AdRequest());
+    await _nativeAd!.load();
+  }
+
+
+  Future initLoadingAd() async {
     await AdManagerInterstitialAd.load(
         adUnitId: AdsHelper.loadingAdUnitId,
         request: const AdManagerAdRequest(),
@@ -48,7 +72,7 @@ class _WarningViewState extends State<WarningView> {
         ));
   }
 
-  void initBottomBanner() async {
+  Future initBottomBanner() async {
     _bottomBanner = BannerAd(
         size: AdSize.banner,
         adUnitId: AdsHelper.bannerAdUtilId,
@@ -126,75 +150,80 @@ class _WarningViewState extends State<WarningView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(child: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                    color: Colors.white, borderRadius: BorderRadius.circular(8),
-                    boxShadow: [BoxShadow(offset: Offset(0,0),spreadRadius: 1,blurRadius: 1)]),
-                child: const Icon(
-                  Icons.computer,
-                  color: Colors.purple,
-                ),
-                alignment: Alignment.center,
-              ),),
-              Container(
-                margin: const EdgeInsets.all(8),
-                padding: const EdgeInsets.all(8),
-                child: const Text(
+          child:
+          Stack(children: [
+            Positioned(child:  Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+
+                Center(child: Container(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
+                      color: Colors.white, borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [BoxShadow(offset: Offset(0,0),spreadRadius: 1,blurRadius: 1)]),
+                  child: const Icon(
+                    Icons.computer,
+                    color: Colors.purple,
+                  ),
+                  alignment: Alignment.center,
+                ),),
+                Container(
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                  child: const Text(
                     "The video you're downloading might be too large. Make sure you have enough memory on your phone before download any video.\n \nFor better experience, it is recommended that you download video via wifi network, since downloading from data network will cost you more money. ",style: TextStyle(fontWeight: FontWeight.bold),),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                      child: Center(
-                        child: _icon(
-                            Icons.star_rounded, "Rate App", () => _openStore()),
-                      )),
-                  Expanded(
-                      child: Center(
-                        child: _icon(Icons.share, "Share App", () => _shareApp()),
-                      )),
-                  Expanded(
-                      child: Center(
-                        child: _icon(Icons.shield, "Privacy Policy", () => _privacyPolicy()),
-                      )),
-                ],
-              ),
-              _isHeaderBannerLoaded
-                  ? Container(
-                margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                child: AdWidget(
-                  ad: _headerBanner!,
                 ),
-                height: _headerBanner!.size.height.toDouble(),
-                width: _headerBanner!.size.width.toDouble(),
-              )
-                  : Container(),
-              ElevatedButton(
-                  style:
-                  ElevatedButton.styleFrom(primary: Colors.green.shade400),
-                  onPressed: () {},
-                  child: const Text(
-                    'Đăng ký ngay',
-                    style: TextStyle(color: Colors.white),
-                  )),
-              ElevatedButton(
-                  style:
-                  ElevatedButton.styleFrom(primary: Colors.green.shade400),
-                  onPressed: () {
-                    _createInterstitialAd();
-                  },
-                  child: const Text(
-                    "Let's Start",
-                    style: TextStyle(color: Colors.black),
-                  )),
-            ],
-          ),
+                Row(
+                  children: [
+                    Expanded(
+                        child: Center(
+                          child: _icon(
+                              Icons.star_rounded, "Rate App", () => _openStore()),
+                        )),
+                    Expanded(
+                        child: Center(
+                          child: _icon(
+                              Icons.share, "Share App", () => _shareApp()),
+                        )),
+                    Expanded(
+                        child: Center(
+                          child: _icon(
+                              Icons.shield, "Privacy Policy", () =>
+                              _privacyPolicy()),
+                        )),
+                  ],
+                ),
+                _isNativeAdLoaded ? Container(
+                  height: 120,
+                  alignment: Alignment.center,
+                  child: AdWidget(ad: _nativeAd!,),
+                ) : Container(),
+
+                ElevatedButton(
+                    style:
+                    ElevatedButton.styleFrom(primary: Colors.green.shade400),
+                    onPressed: () {
+                      _createInterstitialAd();
+                    },
+                    child: const Text(
+                      "Let's Start",
+                      style: TextStyle(color: Colors.black),
+                    )),
+              ],
+            ),top: 0,right: 0,left: 0,bottom: 0,),
+            Positioned(child: _isHeaderBannerLoaded
+                ? Container(
+              margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+              child: AdWidget(
+                ad: _headerBanner!,
+              ),
+              height: _headerBanner!.size.height.toDouble(),
+              width: _headerBanner!.size.width.toDouble(),
+            )
+                : Container(),top: 0,right: 0,left: 0,),
+          ],),
           padding: const EdgeInsets.all(16)),
       bottomNavigationBar: _isBottomBannerLoaded
           ? SizedBox(
@@ -247,16 +276,22 @@ class _WarningViewState extends State<WarningView> {
   }
 
   void navigation() {
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => const GenderView(),));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (context) => const WarningView(),
+    ));
   }
 
-  _shareApp()  async {
-    String link =  "https://play.google.com/store/apps/details?id=ngaoschos.videodownloader";
-    await Share.share(link,subject: "App Download Xvideo");
+  _shareApp() async {
+    String link =
+        "https://play.google.com/store/apps/details?id=ngaoschos.videodownloader";
+    await Share.share(link, subject: "App Download Xvideo");
   }
 
   _privacyPolicy() async {
-    String link = "https://www.app-privacy-policy.com/live.php?token=4zlF44y6BinaPaV6ncpdUSTupTz6MJ4h";
-    await Navigator.of(context).push(MaterialPageRoute(builder: (context) => Webview(url: link),));
+    String link =
+        "https://www.app-privacy-policy.com/live.php?token=4zlF44y6BinaPaV6ncpdUSTupTz6MJ4h";
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => Webview(url: link),
+    ));
   }
 }

@@ -22,15 +22,38 @@ class _GenderViewState extends State<GenderView> {
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
+  bool _isNativeAdLoaded = false;
+  NativeAd? _nativeAd;
 
   @override
   void initState() {
     super.initState();
-    initBottomBanner();
-    initLoadingAd();
+    Future.wait([
+      initBottomBanner(),
+      initLoadingAd(),
+      initNativeAds(),
+    ]);
   }
 
-  void initLoadingAd() async {
+  Future initNativeAds() async {
+    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+        factoryId: 'listTile',
+        listener: NativeAdListener(
+            onAdLoaded: (ad) {
+              setState(() {
+                _isNativeAdLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) {
+              print(err);
+              ad.dispose();
+            }
+        ),
+        request: const AdRequest());
+    await _nativeAd!.load();
+  }
+
+  Future initLoadingAd() async {
     await AdManagerInterstitialAd.load(
         adUnitId: AdsHelper.loadingAdUnitId,
         request: const AdManagerAdRequest(),
@@ -49,7 +72,7 @@ class _GenderViewState extends State<GenderView> {
 
         ));
   }
-  void initBottomBanner() async {
+  Future initBottomBanner() async {
     _bottomBanner = BannerAd(
         size: AdSize.banner,
         adUnitId: AdsHelper.bannerAdUtilId,
@@ -193,6 +216,11 @@ class _GenderViewState extends State<GenderView> {
                     )
                   ],
                 ),
+                _isNativeAdLoaded ? Container(
+                  height: 120,
+                  alignment: Alignment.center,
+                  child: AdWidget(ad: _nativeAd!,),
+                ) : Container(),
                 buttonContinue(),
               ],
             ),

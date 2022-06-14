@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:share/share.dart';
@@ -20,16 +22,41 @@ class _IntroduceViewState extends State<IntroduceView> {
   late AdManagerInterstitialAd _interstitialAd;
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
+  bool _isNativeAdLoaded = false;
   bool _isLoadingAdLoaded = false;
+
+  NativeAd? _nativeAd;
 
   @override
   void initState() {
     super.initState();
-    initBottomBanner();
-    initLoadingAd();
+    Future.wait([
+      initBottomBanner(),
+      initLoadingAd(),
+      initNativeAds(),
+    ]);
   }
 
-  void initLoadingAd() async {
+  Future initNativeAds() async {
+    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+        factoryId: 'listTile',
+        listener: NativeAdListener(
+            onAdLoaded: (ad) {
+              setState(() {
+                _isNativeAdLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) {
+              print(err);
+              ad.dispose();
+            }
+        ),
+        request: const AdRequest());
+   await _nativeAd!.load();
+  }
+
+
+  Future initLoadingAd() async {
     await AdManagerInterstitialAd.load(
         adUnitId: AdsHelper.loadingAdUnitId,
         request: const AdManagerAdRequest(),
@@ -48,7 +75,7 @@ class _IntroduceViewState extends State<IntroduceView> {
         ));
   }
 
-  void initBottomBanner() async {
+  Future initBottomBanner() async {
     _bottomBanner = BannerAd(
         size: AdSize.banner,
         adUnitId: AdsHelper.bannerAdUtilId,
@@ -126,7 +153,9 @@ class _IntroduceViewState extends State<IntroduceView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          child: Column(
+          child:
+         Stack(children: [
+          Positioned(child:  Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -134,41 +163,30 @@ class _IntroduceViewState extends State<IntroduceView> {
                 children: [
                   Expanded(
                       child: Center(
-                    child: _icon(
-                        Icons.star_rounded, "Rate App", () => _openStore()),
-                  )),
+                        child: _icon(
+                            Icons.star_rounded, "Rate App", () => _openStore()),
+                      )),
                   Expanded(
                       child: Center(
-                    child: _icon(Icons.share, "Share App", () => _shareApp()),
-                  )),
+                        child: _icon(
+                            Icons.share, "Share App", () => _shareApp()),
+                      )),
                   Expanded(
                       child: Center(
-                    child: _icon(
-                        Icons.shield, "Privacy Policy", () => _privacyPolicy()),
-                  )),
+                        child: _icon(
+                            Icons.shield, "Privacy Policy", () =>
+                            _privacyPolicy()),
+                      )),
                 ],
               ),
-              _isHeaderBannerLoaded
-                  ? Container(
-                      margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-                      child: AdWidget(
-                        ad: _headerBanner!,
-                      ),
-                      height: _headerBanner!.size.height.toDouble(),
-                      width: _headerBanner!.size.width.toDouble(),
-                    )
-                  : Container(),
+              _isNativeAdLoaded ? Container(
+                height: 120,
+                alignment: Alignment.center,
+                child: AdWidget(ad: _nativeAd!,),
+              ) : Container(),
               ElevatedButton(
                   style:
-                      ElevatedButton.styleFrom(primary: Colors.green.shade400),
-                  onPressed: () {},
-                  child: const Text(
-                    'Đăng ký ngay',
-                    style: TextStyle(color: Colors.white),
-                  )),
-              ElevatedButton(
-                  style:
-                      ElevatedButton.styleFrom(primary: Colors.green.shade400),
+                  ElevatedButton.styleFrom(primary: Colors.green.shade400),
                   onPressed: () {
                     _createInterstitialAd();
                   },
@@ -177,14 +195,25 @@ class _IntroduceViewState extends State<IntroduceView> {
                     style: TextStyle(color: Colors.black),
                   )),
             ],
-          ),
+          ),top: 0,right: 0,left: 0,bottom: 0,),
+           Positioned(child: _isHeaderBannerLoaded
+               ? Container(
+             margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+             child: AdWidget(
+               ad: _headerBanner!,
+             ),
+             height: _headerBanner!.size.height.toDouble(),
+             width: _headerBanner!.size.width.toDouble(),
+           )
+               : Container(),top: 0,right: 0,left: 0,),
+         ],),
           padding: const EdgeInsets.all(16)),
       bottomNavigationBar: _isBottomBannerLoaded
           ? SizedBox(
-              child: AdWidget(ad: _bottomBanner!),
-              height: _bottomBanner!.size.height.toDouble(),
-              width: _bottomBanner!.size.width.toDouble(),
-            )
+        child: AdWidget(ad: _bottomBanner!),
+        height: _bottomBanner!.size.height.toDouble(),
+        width: _bottomBanner!.size.width.toDouble(),
+      )
           : Container(),
     );
   }

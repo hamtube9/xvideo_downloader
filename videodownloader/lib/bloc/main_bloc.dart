@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -32,7 +33,9 @@ class MainBloc extends ChangeNotifier {
       MethodChannel('ngaoschos.videodownloader/insta');
 
   ValueNotifier<bool> notifierDownload = ValueNotifier<bool>(false);
-  ValueNotifier<double> notifierProgress = ValueNotifier<double>(0.0);
+  // ValueNotifier<double> notifierProgress = ValueNotifier<double>(0.0);
+  ValueNotifier<String> notifierError = ValueNotifier<String>("");
+  ValueNotifier<int> notifierTime = ValueNotifier<int>(0);
   ValueNotifier<PermissionStatus?> notifierPermission =
       ValueNotifier<PermissionStatus?>(null);
 
@@ -41,12 +44,39 @@ class MainBloc extends ChangeNotifier {
   Future getUrlDownload(String url) async {
     if(await permission()){
       var res = await service.getUrlVideo(url);
-      if(res!.output != null && res.output!.isNotEmpty){
+      if(res != null && res.status == true && res.output != null && res.output!.isNotEmpty){
         downloadFile(res.output!);
+      }else{
+        if(res == null || res != null && res.status == false){
+          notifierError.value="Something went wrong!";
+        }else if(res.status == true && res.output!.isEmpty){
+          notifierError.value="Please wait! Next download time is 1 minute";
+        }
       }
     }
+    // notifierTime.value = 60;
 
     // downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
+  }
+  int coolDown = 60;
+  Timer? _timerCooldown;
+
+  void startTimeCooldown() {
+    const oneSec =   Duration(seconds: 1);
+    _timerCooldown = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (coolDown == 0) {
+          coolDown = 60;
+          notifierDownload.value = false;
+          timer.cancel();
+        } else {
+          coolDown--;
+          notifierTime.value = coolDown;
+        }
+        print(coolDown);
+      },
+    );
   }
 
 
@@ -62,7 +92,7 @@ class MainBloc extends ChangeNotifier {
       path =  "${dir}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
     }
     final dio = Dio();
-
+    startTimeCooldown();
     try {
       //  await FlutterDownloader.enqueue(
       //   url: url,
@@ -78,19 +108,18 @@ class MainBloc extends ChangeNotifier {
 
       await dio.download(url, path, onReceiveProgress: (rec, total) {
         notifierDownload.value = true;
-        notifierProgress.value = ((rec / total) * 100);
+        // notifierProgress.value = ((rec / total) * 100);
         print(((rec / total) * 100).toStringAsFixed(0) + "%");
-        showProgress(100,((rec / total) * 100).toInt());
+        showProgress("$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint",((rec / total) * 100).toStringAsFixed(0) + "%",100,((rec / total) * 100).toInt());
         // notifierProgress.value = ((rec / total) * 100).toStringAsFixed(0) + "%";
       }).whenComplete(() {
         showNotification(Random().nextInt(2212), 'Download Success',
             '$type$t.$endpoint finished downloading', '');
-     notifierDownload.value = false;
+     // notifierDownload.value = false;
       });
     } catch (e) {
       print(e);
     }
-    notifierDownload.value = false;
     // progressString = "Completed";
     print("Download completed");
   }

@@ -79,7 +79,7 @@ Future<void> showNotification(
   );
 }
 
-showProgress(int maxProgress, int progress) async {
+showProgress(String title,String percent,int maxProgress, int progress) async {
   final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
       'progress channel', 'progress channel',
       channelDescription: 'progress channel description',
@@ -93,7 +93,7 @@ showProgress(int maxProgress, int progress) async {
   final NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
   await flutterLocalNotificationsPlugin.show(
-      0, 'progress notification title', 'progress notification body', platformChannelSpecifics,
+      0, percent,title, platformChannelSpecifics,
       payload: 'item x');
 }
 

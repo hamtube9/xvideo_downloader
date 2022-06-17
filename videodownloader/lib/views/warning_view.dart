@@ -209,7 +209,7 @@ class _WarningViewState extends State<WarningView> {
                     },
                     child: const Text(
                       "Let's Start",
-                      style: TextStyle(color: Colors.black),
+                      style: TextStyle(color: Colors.white),
                     )),
               ],
             ),top: 0,right: 0,left: 0,bottom: 0,),
@@ -277,7 +277,7 @@ class _WarningViewState extends State<WarningView> {
 
   void navigation() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => const WarningView(),
+      builder: (context) => const GenderView(),
     ));
   }
 

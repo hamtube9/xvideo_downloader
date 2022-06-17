@@ -1,9 +1,9 @@
+
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:video_player/video_player.dart';
 import 'package:videodownloader/bloc/gallery_bloc.dart';
 import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
@@ -22,7 +22,6 @@ class DownloadView extends StatefulWidget {
 class _DownloadViewState extends State<DownloadView> {
   bool downloading = false;
   var progressString = "";
-  late VideoPlayerController _controller;
   bool isShowButton = false;
   bool isPlaying = false;
   PermissionStatus status = PermissionStatus.denied;
@@ -32,11 +31,8 @@ class _DownloadViewState extends State<DownloadView> {
   TextEditingController? _urlController;
   MainBloc? bloc;
 
-
   BannerAd? _bottomBanner;
   bool _isBottomBannerLoaded = false;
-
-
 
   @override
   void initState() {
@@ -47,7 +43,6 @@ class _DownloadViewState extends State<DownloadView> {
     _urlController = TextEditingController();
     // permission();
     initBottomBanner();
-
   }
 
   void initBottomBanner() async {
@@ -71,7 +66,6 @@ class _DownloadViewState extends State<DownloadView> {
 
     await _bottomBanner!.load();
   }
-
 
   autoHideButton() {
     Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
@@ -131,51 +125,46 @@ class _DownloadViewState extends State<DownloadView> {
                 ],
               ),
             ),
-            ValueListenableBuilder<bool>(
-              valueListenable: bloc!.notifierDownload,
-              builder: (BuildContext context, bool value, Widget? child) {
-                return value
-                    ? ValueListenableBuilder<double>(
-                        valueListenable: bloc!.notifierProgress,
-                        builder: (c, v, _) {
-                          return Container(
-                            child: Stack(
-                              children: [
-                                Positioned(child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: LinearProgressIndicator(
-                                    value: v / 100.0,
-                                    color: Colors.white,
-                                    valueColor:
-                                    const AlwaysStoppedAnimation<Color>(Colors.green),
-                                  ),
-                                ),top: 0,right: 0,bottom: 0,left: 0,),
-                                Center(child: Text("Downloading "+ (v).toStringAsFixed(0) + "%"),)
-                              ],
-                            ),
-                            decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black,width: 0.5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                            height: 24,
-                          );
-                        })
+            ValueListenableBuilder<int>(
+              valueListenable: bloc!.notifierTime,
+              builder: (BuildContext context,  value, Widget? child) {
+                return value > 0
+                    ? Container(
+                  child: Text(
+                    "Wait $value s for next download",
+                    style: const TextStyle(color: Colors.green),
+                  ),
+                  alignment: Alignment.center,
+                )
+                    : Container();
+              },
+            ),
+            ValueListenableBuilder<String>(
+              valueListenable: bloc!.notifierError,
+              builder: (BuildContext context, String value, Widget? child) {
+                return value.isNotEmpty
+                    ? Container(
+                        child: Text(
+                          value,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        alignment: Alignment.center,
+                      )
                     : Container();
               },
             ),
             privateMedia(),
             fbStories(),
-          _isBottomBannerLoaded
-              ? Container(
-            child: AdWidget(
-              ad: _bottomBanner!,
-            ),
-            height: _bottomBanner!.size.height.toDouble(),
-            width: _bottomBanner!.size.width.toDouble(),
-            alignment: Alignment.center,
-          )
-              : Container()
+            _isBottomBannerLoaded
+                ? Container(
+                    child: AdWidget(
+                      ad: _bottomBanner!,
+                    ),
+                    height: _bottomBanner!.size.height.toDouble(),
+                    width: _bottomBanner!.size.width.toDouble(),
+                    alignment: Alignment.center,
+                  )
+                : Container()
           ],
         ),
       ),
@@ -186,7 +175,6 @@ class _DownloadViewState extends State<DownloadView> {
     SystemChannels.textInput.invokeListMethod("TextInput.hide");
     _focusSearch!.unfocus();
   }
-
 
   iconSupport() {
     return Column(
@@ -199,9 +187,8 @@ class _DownloadViewState extends State<DownloadView> {
               size: 24,
             ),
           ),
-          decoration: BoxDecoration(
-              color: Colors.deepPurple,
-              borderRadius: BorderRadius.circular(16)),
+          decoration:
+              BoxDecoration(color: Colors.deepPurple, borderRadius: BorderRadius.circular(16)),
           height: 40,
           width: 40,
         ),
@@ -310,8 +297,7 @@ class _DownloadViewState extends State<DownloadView> {
                       decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              bottomLeft: Radius.circular(12)),
+                              topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
                           boxShadow: [
                             BoxShadow(
                                 offset: const Offset(-1, 3),
@@ -346,6 +332,7 @@ class _DownloadViewState extends State<DownloadView> {
                         var text = await FlutterClipboard.paste();
                         setState(() {
                           _urlController!.text = text;
+                          // _urlController!.text = "https://www.xvideos.com/video35033155/beautiful_japanesegirl_-_nanairo.co";
                         });
                       },
                       child: Container(
@@ -354,8 +341,7 @@ class _DownloadViewState extends State<DownloadView> {
                         decoration: const BoxDecoration(
                           color: Colors.black,
                           borderRadius: BorderRadius.only(
-                              topRight: Radius.circular(12),
-                              bottomRight: Radius.circular(12)),
+                              topRight: Radius.circular(12), bottomRight: Radius.circular(12)),
                         ),
                         child: const Center(
                           child: Icon(
@@ -379,8 +365,8 @@ class _DownloadViewState extends State<DownloadView> {
                             toast(context, 'Url can not empty');
                             return;
                           }
-                          if(bloc!.notifierDownload.value == true){
-                            toast(context, 'Wait for finish download');
+                          if (bloc!.notifierTime.value > 0) {
+                            toast(context, 'Wait ${bloc!.notifierTime.value}s for next download');
                             return;
                           }
                           bloc!.getUrlDownload(_urlController!.text);
@@ -395,8 +381,7 @@ class _DownloadViewState extends State<DownloadView> {
                             ),
                           ),
                           decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8)),
+                              color: Colors.black, borderRadius: BorderRadius.circular(8)),
                         ),
                       )),
                       Expanded(
@@ -418,8 +403,7 @@ class _DownloadViewState extends State<DownloadView> {
                             ),
                           ),
                           decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(8)),
+                              color: Colors.black, borderRadius: BorderRadius.circular(8)),
                         ),
                       )),
                     ],
@@ -535,9 +519,7 @@ class _DownloadViewState extends State<DownloadView> {
                   child: TextField(
                 focusNode: _focusSearch,
                 style: const TextStyle(
-                    fontFamily: "SourceSerifPro",
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400),
+                    fontFamily: "SourceSerifPro", color: Colors.black, fontWeight: FontWeight.w400),
                 onChanged: (value) {
                   //  loginHelper.checkEmail(value);
                 },
@@ -597,9 +579,8 @@ class _DownloadViewState extends State<DownloadView> {
     return Container(
       decoration: const BoxDecoration(
           color: Colors.black,
-          borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(60),
-              bottomRight: Radius.circular(60))),
+          borderRadius:
+              BorderRadius.only(bottomLeft: Radius.circular(60), bottomRight: Radius.circular(60))),
     );
   }
 }

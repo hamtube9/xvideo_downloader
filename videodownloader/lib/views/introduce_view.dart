@@ -192,7 +192,7 @@ class _IntroduceViewState extends State<IntroduceView> {
                   },
                   child: const Text(
                     "Let's Start",
-                    style: TextStyle(color: Colors.black),
+                    style: TextStyle(color: Colors.white),
                   )),
             ],
           ),top: 0,right: 0,left: 0,bottom: 0,),

@@ -6,28 +6,33 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:videodownloader/bloc/gallery_bloc.dart';
+import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/injection.dart';
 import 'package:videodownloader/views/download_view.dart';
+import 'package:videodownloader/views/gallery_view.dart';
 import 'package:videodownloader/views/introduce_view.dart';
+import 'package:videodownloader/views/language_view.dart';
+import 'package:videodownloader/views/play_media_view.dart';
 import 'package:videodownloader/views/splash_screen.dart';
 import 'package:toast/toast.dart';
 
 final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+final navKey = GlobalKey<NavigatorState>();
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
   _initAds();
   noti();
-
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 _initAds() async {
   await MobileAds.instance.initialize();
   if (kDebugMode) {
-    RequestConfiguration configuration =
-        RequestConfiguration(testDeviceIds: ["A7454E1FD0E87DA10E30B70108A75C62"]);
+    RequestConfiguration configuration = RequestConfiguration(
+        testDeviceIds: ["A7454E1FD0E87DA10E30B70108A75C62"]);
     MobileAds.instance.updateRequestConfiguration(configuration);
   }
 }
@@ -44,7 +49,16 @@ noti() async {
   var initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
 
-  flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: (payload) => _onSelectNotification(payload));
+}
+
+_onSelectNotification(String payload) {
+  print(payload);
+
+  navKey.currentState.push(MaterialPageRoute(
+    builder: (context) => PlayMediaView(path: payload),
+  ));
 }
 
 Future<void> showNotification(
@@ -66,10 +80,11 @@ Future<void> showNotification(
     importance: notificationImportance,
     priority: notificationPriority,
   );
-  var iOSPlatformChannelSpecifics = const IOSNotificationDetails(presentSound: false);
+  var iOSPlatformChannelSpecifics =
+      const IOSNotificationDetails(presentSound: false);
   var platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics, iOS: iOSPlatformChannelSpecifics);
-
+      android: androidPlatformChannelSpecifics,
+      iOS: iOSPlatformChannelSpecifics);
   await flutterLocalNotificationsPlugin.show(
     notificationId,
     notificationTitle,
@@ -79,22 +94,22 @@ Future<void> showNotification(
   );
 }
 
-showProgress(String title,String percent,int maxProgress, int progress) async {
-  final AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      'progress channel', 'progress channel',
-      channelDescription: 'progress channel description',
-      channelShowBadge: false,
-      importance: Importance.max,
-      priority: Priority.high,
-      onlyAlertOnce: true,
-      showProgress: true,
-      maxProgress: maxProgress,
-      progress: progress);
+showProgress(int id, String title, String percent, int maxProgress,
+    int progress, String payload) async {
+  final AndroidNotificationDetails androidPlatformChannelSpecifics =
+      AndroidNotificationDetails(title, 'progress channel',
+          channelDescription: 'downloading',
+          channelShowBadge: false,
+          importance: Importance.max,
+          priority: Priority.high,
+          onlyAlertOnce: true,
+          showProgress: true,
+          maxProgress: maxProgress,
+          progress: progress);
   final NotificationDetails platformChannelSpecifics =
       NotificationDetails(android: androidPlatformChannelSpecifics);
-  await flutterLocalNotificationsPlugin.show(
-      0, percent,title, platformChannelSpecifics,
-      payload: 'item x');
+  await flutterLocalNotificationsPlugin
+      .show(id, percent, title, platformChannelSpecifics, payload: payload);
 }
 
 class MyApp extends StatelessWidget {
@@ -105,11 +120,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navKey,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         builder: EasyLoading.init(),
-        home: const SplashScreen());
+        home: const LanguageView());
   }
 }
 

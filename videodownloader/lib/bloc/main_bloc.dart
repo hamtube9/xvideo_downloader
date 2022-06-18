@@ -8,6 +8,7 @@ import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:ext_storage/ext_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
@@ -33,6 +34,7 @@ class MainBloc extends ChangeNotifier {
       MethodChannel('ngaoschos.videodownloader/insta');
 
   ValueNotifier<bool> notifierDownload = ValueNotifier<bool>(false);
+
   // ValueNotifier<double> notifierProgress = ValueNotifier<double>(0.0);
   ValueNotifier<String> notifierError = ValueNotifier<String>("");
   ValueNotifier<int> notifierTime = ValueNotifier<int>(0);
@@ -42,15 +44,18 @@ class MainBloc extends ChangeNotifier {
   ValueNotifier<String?> tokenIg = ValueNotifier<String?>(null);
 
   Future getUrlDownload(String url) async {
-    if(await permission()){
+    if (await permission()) {
       var res = await service.getUrlVideo(url);
-      if(res != null && res.status == true && res.output != null && res.output!.isNotEmpty){
+      if (res != null &&
+          res.status == true &&
+          res.output != null &&
+          res.output!.isNotEmpty) {
         downloadFile(res.output!);
-      }else{
-        if(res == null || res != null && res.status == false){
-          notifierError.value="Something went wrong!";
-        }else if(res.status == true && res.output!.isEmpty){
-          notifierError.value="Please wait! Next download time is 1 minute";
+      } else {
+        if (res == null || res != null && res.status == false) {
+          notifierError.value = "Something went wrong!";
+        } else if (res.status == true && res.output!.isEmpty) {
+          notifierError.value = "Please wait! Next download time is 1 minute";
         }
       }
     }
@@ -58,14 +63,15 @@ class MainBloc extends ChangeNotifier {
 
     // downloadFile("https://video-hw.xvideos-cdn.com/videos/mp4/1/6/8/xvideos.com_168d1f6b70aeacd0dcb3f618be939a33.mp4?e=1654935773&ri=1024&rs=85&h=6fd910589f61583e7be52a3cb48c9481");
   }
+
   int coolDown = 60;
   Timer? _timerCooldown;
 
   void startTimeCooldown() {
-    const oneSec =   Duration(seconds: 1);
+    const oneSec = Duration(seconds: 1);
     _timerCooldown = Timer.periodic(
       oneSec,
-          (Timer timer) {
+      (Timer timer) {
         if (coolDown == 0) {
           coolDown = 60;
           notifierDownload.value = false;
@@ -79,8 +85,6 @@ class MainBloc extends ChangeNotifier {
     );
   }
 
-
-
   Future<void> downloadFile(String url) async {
     String? endpoint = loadEnpoint(url);
     String? type = loadType(url);
@@ -88,8 +92,9 @@ class MainBloc extends ChangeNotifier {
     final t = DateFormat('yyyyMMdd-kk-mm').format(DateTime.now());
     var path = "${dir}/$type$t.$endpoint";
     var exist = await File(path).exists();
-    if(exist){
-      path =  "${dir}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
+    if (exist) {
+      path =
+          "${dir}/$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint";
     }
     final dio = Dio();
     startTimeCooldown();
@@ -105,17 +110,21 @@ class MainBloc extends ChangeNotifier {
       //   print(
       //       'Download task ($id) is in status ($status) and process ($progress)');
       // });
-
+      var rd = Random().nextInt(2212);
       await dio.download(url, path, onReceiveProgress: (rec, total) {
         notifierDownload.value = true;
         // notifierProgress.value = ((rec / total) * 100);
-        print(((rec / total) * 100).toStringAsFixed(0) + "%");
-        showProgress("$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint",((rec / total) * 100).toStringAsFixed(0) + "%",100,((rec / total) * 100).toInt());
+        // print(((rec / total) * 100).toStringAsFixed(0) + "%");
+        showProgress(rd,
+            "$type${DateFormat('MMdd-kk-mm').format(DateTime.now())}.$endpoint",
+            ((rec / total) * 100).toStringAsFixed(0) + "%",
+            100,
+            ((rec / total) * 100).toInt(),path);
         // notifierProgress.value = ((rec / total) * 100).toStringAsFixed(0) + "%";
       }).whenComplete(() {
-        showNotification(Random().nextInt(2212), 'Download Success',
-            '$type$t.$endpoint finished downloading', '');
-     // notifierDownload.value = false;
+        showNotification(rd, 'Download Success',
+            '$type$t.$endpoint finished downloading', path);
+        // notifierDownload.value = false;
       });
     } catch (e) {
       print(e);
@@ -142,8 +151,6 @@ class MainBloc extends ChangeNotifier {
     }
     return s.isGranted;
   }
-
-
 
   loginInsta() async {
     String url =

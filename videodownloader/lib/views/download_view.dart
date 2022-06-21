@@ -1,5 +1,6 @@
 
 import 'package:clipboard/clipboard.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -10,6 +11,7 @@ import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/gallery_view.dart';
 
 class DownloadView extends StatefulWidget {
@@ -37,6 +39,7 @@ class _DownloadViewState extends State<DownloadView> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Main Download View');
     bloc = MainProvider.of(context);
     _focusSearch = FocusNode();
     _searchController = TextEditingController();
@@ -56,8 +59,14 @@ class _DownloadViewState extends State<DownloadView> {
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async  {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _bottomBanner!.dispose();
             _bottomBanner = null;
           },

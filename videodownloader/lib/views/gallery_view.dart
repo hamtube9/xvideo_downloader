@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
@@ -8,6 +9,7 @@ import 'package:videodownloader/bloc/gallery_bloc.dart';
 import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/compare.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/play_media_view.dart';
 import 'package:videodownloader/views/tabbar_gallery_view.dart';
 
@@ -35,8 +37,14 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async{
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _bottomBanner!.dispose();
             _bottomBanner = null;
           },
@@ -48,6 +56,7 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Gallery View');
     bloc = GalleryProvider.of(context);
     bloc!.loadFiles();
     initBottomBanner();

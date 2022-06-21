@@ -1,7 +1,9 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/category_view.dart';
 
 enum Gender { male, female }
@@ -28,6 +30,7 @@ class _GenderViewState extends State<GenderView> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Gender View');
     Future.wait([
       initBottomBanner(),
       initLoadingAd(),
@@ -44,7 +47,13 @@ class _GenderViewState extends State<GenderView> {
                 _isNativeAdLoaded = true;
               });
             },
-            onAdFailedToLoad: (ad, err) {
+            onAdFailedToLoad: (ad, err) async {
+              await FirebaseCrashlytics.instance.recordError(
+                  err,
+                  StackTrace.current,
+                  reason: 'load banner ad error',
+                  fatal: true
+              );
               print(err);
               ad.dispose();
             }
@@ -66,7 +75,13 @@ class _GenderViewState extends State<GenderView> {
             });
             // Keep a reference to the ad so you can show it later.
           },
-          onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad: (LoadAdError error)async  {
+            await FirebaseCrashlytics.instance.recordError(
+                error,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             print('InterstitialAd failed to load: $error');
           },
 
@@ -83,8 +98,14 @@ class _GenderViewState extends State<GenderView> {
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async  {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _bottomBanner!.dispose();
             _bottomBanner = null;
           },
@@ -100,7 +121,13 @@ class _GenderViewState extends State<GenderView> {
               _isHeaderBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err)  async {
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             print(err);
             _headerBanner!.dispose();
             _headerBanner = null;

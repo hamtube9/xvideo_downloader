@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:ext_storage/ext_storage.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
@@ -126,7 +127,13 @@ class MainBloc extends ChangeNotifier {
             '$type$t.$endpoint finished downloading', path);
         // notifierDownload.value = false;
       });
-    } catch (e) {
+    } catch (e)  {
+      await FirebaseCrashlytics.instance.recordError(
+          e,
+          StackTrace.current,
+          reason: 'load banner ad error',
+          fatal: true
+      );
       print(e);
     }
     // progressString = "Completed";
@@ -166,6 +173,13 @@ class MainBloc extends ChangeNotifier {
           loadToken(code);
         }
       }
+    }).onError( (e) async {
+      await FirebaseCrashlytics.instance.recordError(
+          e,
+          StackTrace.current,
+          reason: 'load banner ad error',
+          fatal: true
+      );
     });
   }
 
@@ -205,6 +219,12 @@ class MainBloc extends ChangeNotifier {
     try {
       await defaultPlatform.invokeMethod('launchInstagram');
     } catch (e) {
+      await FirebaseCrashlytics.instance.recordError(
+          e,
+          StackTrace.current,
+          reason: 'load banner ad error',
+          fatal: true
+      );
       print(e);
     }
   }

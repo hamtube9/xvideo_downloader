@@ -1,4 +1,8 @@
 // @dart=2.9
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -20,12 +24,16 @@ import 'package:toast/toast.dart';
 final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 final navKey = GlobalKey<NavigatorState>();
 
-void main() {
+void main()  async {
+
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   configureDependencies();
   _initAds();
   noti();
-  runApp(MyApp());
+  runApp(const MyApp());
+
 }
 
 _initAds() async {
@@ -125,7 +133,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
         ),
         builder: EasyLoading.init(),
-        home: const LanguageView());
+        home: const SplashScreen());
   }
 }
 

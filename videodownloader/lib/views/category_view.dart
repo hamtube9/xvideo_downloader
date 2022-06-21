@@ -1,8 +1,10 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/model/category/category.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/button_animation_color.dart';
 import 'package:videodownloader/views/language_view.dart';
 
@@ -24,6 +26,7 @@ class _CategoryViewState extends State<CategoryView> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Category View');
     initBottomBanner();
     initLoadingAd();
   }
@@ -41,7 +44,13 @@ class _CategoryViewState extends State<CategoryView> {
             });
             // Keep a reference to the ad so you can show it later.
           },
-          onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad: (LoadAdError error) async  {
+            await FirebaseCrashlytics.instance.recordError(
+                error,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             print('InterstitialAd failed to load: $error');
           },
 
@@ -59,8 +68,14 @@ class _CategoryViewState extends State<CategoryView> {
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _bottomBanner!.dispose();
             _bottomBanner = null;
           },
@@ -76,8 +91,14 @@ class _CategoryViewState extends State<CategoryView> {
               _isHeaderBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err)  async {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _headerBanner!.dispose();
             _headerBanner = null;
           },

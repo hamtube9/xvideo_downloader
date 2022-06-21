@@ -1,3 +1,4 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -46,7 +47,13 @@ class _LanguageViewState extends State<LanguageView> {
             });
             // Keep a reference to the ad so you can show it later.
           },
-          onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad: (LoadAdError error)async  {
+            await FirebaseCrashlytics.instance.recordError(
+                error,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             print('InterstitialAd failed to load: $error');
           },
 
@@ -64,8 +71,14 @@ class _LanguageViewState extends State<LanguageView> {
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async  {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _bottomBanner!.dispose();
             _bottomBanner = null;
           },
@@ -81,8 +94,14 @@ class _LanguageViewState extends State<LanguageView> {
               _isHeaderBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async  {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _headerBanner!.dispose();
             _headerBanner = null;
           },

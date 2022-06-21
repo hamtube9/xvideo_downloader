@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:share/share.dart';
 import 'package:store_redirect/store_redirect.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/warning_view.dart';
 import 'package:videodownloader/views/web_view.dart';
 
@@ -30,6 +32,7 @@ class _IntroduceViewState extends State<IntroduceView> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Introduce View');
     Future.wait([
       initBottomBanner(),
       initLoadingAd(),
@@ -46,9 +49,15 @@ class _IntroduceViewState extends State<IntroduceView> {
                 _isNativeAdLoaded = true;
               });
             },
-            onAdFailedToLoad: (ad, err) {
+            onAdFailedToLoad: (ad, err) async  {
               print(err);
               ad.dispose();
+              await FirebaseCrashlytics.instance.recordError(
+                  err,
+                  StackTrace.current,
+                  reason: 'load native ad  error',
+                  fatal: true
+              );
             }
         ),
         request: const AdRequest());
@@ -69,8 +78,14 @@ class _IntroduceViewState extends State<IntroduceView> {
             });
             // Keep a reference to the ad so you can show it later.
           },
-          onAdFailedToLoad: (LoadAdError error) {
+          onAdFailedToLoad: (LoadAdError error) async  {
             print('InterstitialAd failed to load: $error');
+            await FirebaseCrashlytics.instance.recordError(
+                error,
+                StackTrace.current,
+                reason: 'load ad error',
+                fatal: true
+            );
           },
         ));
   }
@@ -86,10 +101,16 @@ class _IntroduceViewState extends State<IntroduceView> {
               _isBottomBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err) async  {
             print(err);
             _bottomBanner!.dispose();
             _bottomBanner = null;
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
           },
         ),
         request: const AdRequest());
@@ -103,10 +124,17 @@ class _IntroduceViewState extends State<IntroduceView> {
               _isHeaderBannerLoaded = true;
             });
           },
-          onAdFailedToLoad: (ad, err) {
+          onAdFailedToLoad: (ad, err)  async {
             print(err);
+            await FirebaseCrashlytics.instance.recordError(
+                err,
+                StackTrace.current,
+                reason: 'load banner ad error',
+                fatal: true
+            );
             _headerBanner!.dispose();
             _headerBanner = null;
+
           },
         ),
         request: const AdRequest());
@@ -137,6 +165,7 @@ class _IntroduceViewState extends State<IntroduceView> {
       },
       onAdImpression: (AdManagerInterstitialAd ad) =>
           print('$ad impression occurred.'),
+
     );
     await _interstitialAd.show();
   }

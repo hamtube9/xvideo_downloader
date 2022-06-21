@@ -1,9 +1,7 @@
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:videodownloader/bloc/main_bloc.dart';
-import 'package:videodownloader/bloc/main_provider.dart';
-import 'package:videodownloader/views/download_view.dart';
-import 'package:videodownloader/views/gender_view.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/introduce_view.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,11 +15,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Splash View');
     Future.delayed(const Duration(milliseconds: 3000)).whenComplete(() {
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) =>const IntroduceView()),
       );
     });
+
   }
 
   @override

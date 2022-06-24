@@ -40,100 +40,114 @@ class _WarningViewState extends State<WarningView> {
 
 
   Future initNativeAds() async {
-    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
-        factoryId: 'listTile',
-        listener: NativeAdListener(
-            onAdLoaded: (ad) {
-              setState(() {
-                _isNativeAdLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              print(err);
-              ad.dispose();
-              await FirebaseCrashlytics.instance.recordError(
-                  err,
-                  StackTrace.current,
-                  reason: 'load native ad error',
-                  fatal: true
-              );
-            }
-        ),
-        request: const AdRequest());
-    await _nativeAd!.load();
+    try{
+      _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+          factoryId: 'listTile',
+          listener: NativeAdListener(
+              onAdLoaded: (ad) {
+                setState(() {
+                  _isNativeAdLoaded = true;
+                });
+              },
+              onAdFailedToLoad: (ad, err) async {
+                print(err);
+                ad.dispose();
+                await FirebaseCrashlytics.instance.recordError(
+                    err,
+                    StackTrace.current,
+                    reason: 'load native ad error',
+                    fatal: true
+                );
+              }
+          ),
+          request: const AdRequest());
+      await _nativeAd!.load();
+    }catch(e){
+      FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+    }
+
   }
 
 
   Future initLoadingAd() async {
-    await AdManagerInterstitialAd.load(
-        adUnitId: AdsHelper.loadingAdUnitId,
-        request: const AdManagerAdRequest(),
-        adLoadCallback: AdManagerInterstitialAdLoadCallback(
-          onAdLoaded: (AdManagerInterstitialAd ad) {
-            print("AdManagerInterstitialAd loadeddddddddddddd");
-            setState(() {
-              _isLoadingAdLoaded = true;
-              _interstitialAd = ad;
-            });
-            // Keep a reference to the ad so you can show it later.
-          },
-          onAdFailedToLoad: (LoadAdError error) async  {
-            await FirebaseCrashlytics.instance.recordError(
-                error,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            print('InterstitialAd failed to load: $error');
+    try{
+      await AdManagerInterstitialAd.load(
+          adUnitId: AdsHelper.loadingAdUnitId,
+          request: const AdManagerAdRequest(),
+          adLoadCallback: AdManagerInterstitialAdLoadCallback(
+            onAdLoaded: (AdManagerInterstitialAd ad) {
+              print("AdManagerInterstitialAd loadeddddddddddddd");
+              setState(() {
+                _isLoadingAdLoaded = true;
+                _interstitialAd = ad;
+              });
+              // Keep a reference to the ad so you can show it later.
+            },
+            onAdFailedToLoad: (LoadAdError error) async  {
+              await FirebaseCrashlytics.instance.recordError(
+                  error,
+                  StackTrace.current,
+                  reason: 'load banner ad error',
+                  fatal: true
+              );
+              print('InterstitialAd failed to load: $error');
 
-          },
-        ));
+            },
+          ));
+    }catch(e){
+      FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+    }
+
   }
 
   Future initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
+   try{
+     _bottomBanner = BannerAd(
+         size: AdSize.banner,
+         adUnitId: AdsHelper.bannerAdUtilId,
+         listener: BannerAdListener(
+           onAdLoaded: (ad) {
+             print("loadedddddddddddddddd");
+             setState(() {
+               _isBottomBannerLoaded = true;
+             });
+           },
+           onAdFailedToLoad: (ad, err) async  {
+             print(err);
+             await FirebaseCrashlytics.instance.recordError(
+                 err,
+                 StackTrace.current,
+                 reason: 'load banner ad error',
+                 fatal: true
+             );
+             _bottomBanner!.dispose();
+             _bottomBanner = null;
 
-          },
-        ),
-        request: const AdRequest());
-    _headerBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isHeaderBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) {
-            print(err);
-            _headerBanner!.dispose();
-            _headerBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    await _bottomBanner!.load();
-    await _headerBanner!.load();
+           },
+         ),
+         request: const AdRequest());
+     _headerBanner = BannerAd(
+         size: AdSize.banner,
+         adUnitId: AdsHelper.bannerAdUtilId,
+         listener: BannerAdListener(
+           onAdLoaded: (ad) {
+             print("loadedddddddddddddddd");
+             setState(() {
+               _isHeaderBannerLoaded = true;
+             });
+           },
+           onAdFailedToLoad: (ad, err) {
+             print(err);
+             _headerBanner!.dispose();
+             _headerBanner = null;
+           },
+         ),
+         request: const AdRequest());
+     await _bottomBanner!.load();
+     await _headerBanner!.load();
+   }catch(e){
+     FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+   }
   }
 
   void _createInterstitialAd() async {

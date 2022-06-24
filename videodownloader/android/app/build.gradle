@@ -13,12 +13,12 @@ if (flutterRoot == null) {
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
-    flutterVersionCode = '9'
+    flutterVersionCode = '10'
 }
 
 def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
-    flutterVersionName = '1.0.9'
+    flutterVersionName = '1.0.10'
 }
 
 apply plugin: 'com.android.application'
@@ -90,6 +90,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation platform('com.google.firebase:firebase-bom:30.0.2')
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     implementation project(path: ':google_mobile_ads')
 //    implementation 'com.google.android.gms:play-services-ads:21.0.0'
 }

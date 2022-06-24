@@ -8,6 +8,7 @@ import 'package:videodownloader/main.dart';
 import 'package:videodownloader/model/category/category.dart';
 import 'package:videodownloader/services/download_service.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
+import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/button_animation_color.dart';
 import 'package:videodownloader/views/download_view.dart';
 
@@ -30,85 +31,95 @@ class _LanguageViewState extends State<LanguageView> {
   @override
   void initState() {
     super.initState();
+    FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Language View');
     initBottomBanner();
     initLoadingAd();
   }
 
   void initLoadingAd() async {
-    await AdManagerInterstitialAd.load(
-        adUnitId: AdsHelper.loadingAdUnitId,
-        request: const AdManagerAdRequest(),
-        adLoadCallback: AdManagerInterstitialAdLoadCallback(
-          onAdLoaded: (AdManagerInterstitialAd ad) {
-            print("AdManagerInterstitialAd loadeddddddddddddd");
-            setState(() {
-              _isLoadingAdLoaded = true;
-              _interstitialAd = ad;
-            });
-            // Keep a reference to the ad so you can show it later.
-          },
-          onAdFailedToLoad: (LoadAdError error)async  {
-            await FirebaseCrashlytics.instance.recordError(
-                error,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            print('InterstitialAd failed to load: $error');
-          },
+ try{
+   await AdManagerInterstitialAd.load(
+       adUnitId: AdsHelper.loadingAdUnitId,
+       request: const AdManagerAdRequest(),
+       adLoadCallback: AdManagerInterstitialAdLoadCallback(
+         onAdLoaded: (AdManagerInterstitialAd ad) {
+           print("AdManagerInterstitialAd loadeddddddddddddd");
+           setState(() {
+             _isLoadingAdLoaded = true;
+             _interstitialAd = ad;
+           });
+           // Keep a reference to the ad so you can show it later.
+         },
+         onAdFailedToLoad: (LoadAdError error)async  {
+           await FirebaseCrashlytics.instance.recordError(
+               error,
+               StackTrace.current,
+               reason: 'load banner ad error',
+               fatal: true
+           );
+           print('InterstitialAd failed to load: $error');
+         },
 
-        ));
+       ));
+ }catch(e){
+   FirebaseCrashlytics.instance.setCustomKey('Language View',e.toString());
+ }
   }
 
   void initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    _headerBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isHeaderBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _headerBanner!.dispose();
-            _headerBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    await _bottomBanner!.load();
-    await _headerBanner!.load();
+    try{
+      _bottomBanner = BannerAd(
+          size: AdSize.banner,
+          adUnitId: AdsHelper.bannerAdUtilId,
+          listener: BannerAdListener(
+            onAdLoaded: (ad) {
+              print("loadedddddddddddddddd");
+              setState(() {
+                _isBottomBannerLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) async  {
+              print(err);
+              await FirebaseCrashlytics.instance.recordError(
+                  err,
+                  StackTrace.current,
+                  reason: 'load banner ad error',
+                  fatal: true
+              );
+              _bottomBanner!.dispose();
+              _bottomBanner = null;
+            },
+          ),
+          request: const AdRequest());
+      _headerBanner = BannerAd(
+          size: AdSize.banner,
+          adUnitId: AdsHelper.bannerAdUtilId,
+          listener: BannerAdListener(
+            onAdLoaded: (ad) {
+              print("loadedddddddddddddddd");
+              setState(() {
+                _isHeaderBannerLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) async  {
+              print(err);
+              await FirebaseCrashlytics.instance.recordError(
+                  err,
+                  StackTrace.current,
+                  reason: 'load banner ad error',
+                  fatal: true
+              );
+              _headerBanner!.dispose();
+              _headerBanner = null;
+            },
+          ),
+          request: const AdRequest());
+      await _bottomBanner!.load();
+      await _headerBanner!.load();
+    }catch(e){
+      FirebaseCrashlytics.instance.setCustomKey('Language View',e.toString());
+    }
+
   }
 
   void _createInterstitialAd() async {

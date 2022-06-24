@@ -41,105 +41,97 @@ class _IntroduceViewState extends State<IntroduceView> {
   }
 
   Future initNativeAds() async {
-    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
-        factoryId: 'listTile',
-        listener: NativeAdListener(
-            onAdLoaded: (ad) {
-              setState(() {
-                _isNativeAdLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async  {
-              print(err);
-              ad.dispose();
-              await FirebaseCrashlytics.instance.recordError(
-                  err,
-                  StackTrace.current,
-                  reason: 'load native ad  error',
-                  fatal: true
-              );
-            }
-        ),
-        request: const AdRequest());
-   await _nativeAd!.load();
+    try {
+      _nativeAd = NativeAd(
+          adUnitId: AdsHelper.loadingOriginId,
+          factoryId: 'listTile',
+          listener: NativeAdListener(onAdLoaded: (ad) {
+            setState(() {
+              _isNativeAdLoaded = true;
+            });
+          }, onAdFailedToLoad: (ad, err) async {
+            print(err);
+            ad.dispose();
+            await FirebaseCrashlytics.instance
+                .recordError(err, StackTrace.current, reason: 'load native ad  error', fatal: true);
+          }),
+          request: const AdRequest());
+      await _nativeAd!.load();
+    } catch (e) {
+      FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
+    }
   }
 
-
   Future initLoadingAd() async {
-    await AdManagerInterstitialAd.load(
-        adUnitId: AdsHelper.loadingAdUnitId,
-        request: const AdManagerAdRequest(),
-        adLoadCallback: AdManagerInterstitialAdLoadCallback(
-          onAdLoaded: (AdManagerInterstitialAd ad) {
-            print("AdManagerInterstitialAd loadeddddddddddddd");
-            setState(() {
-              _isLoadingAdLoaded = true;
-              _interstitialAd = ad;
-            });
-            // Keep a reference to the ad so you can show it later.
-          },
-          onAdFailedToLoad: (LoadAdError error) async  {
-            print('InterstitialAd failed to load: $error');
-            await FirebaseCrashlytics.instance.recordError(
-                error,
-                StackTrace.current,
-                reason: 'load ad error',
-                fatal: true
-            );
-          },
-        ));
+    try {
+      await AdManagerInterstitialAd.load(
+          adUnitId: AdsHelper.loadingAdUnitId,
+          request: const AdManagerAdRequest(),
+          adLoadCallback: AdManagerInterstitialAdLoadCallback(
+            onAdLoaded: (AdManagerInterstitialAd ad) {
+              print("AdManagerInterstitialAd loadeddddddddddddd");
+              setState(() {
+                _isLoadingAdLoaded = true;
+                _interstitialAd = ad;
+              });
+              // Keep a reference to the ad so you can show it later.
+            },
+            onAdFailedToLoad: (LoadAdError error) async {
+              print('InterstitialAd failed to load: $error');
+              await FirebaseCrashlytics.instance
+                  .recordError(error, StackTrace.current, reason: 'load ad error', fatal: true);
+            },
+          ));
+    } catch (e) {
+      FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
+    }
   }
 
   Future initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-          },
-        ),
-        request: const AdRequest());
-    _headerBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isHeaderBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err)  async {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _headerBanner!.dispose();
-            _headerBanner = null;
-
-          },
-        ),
-        request: const AdRequest());
-    await _bottomBanner!.load();
-    await _headerBanner!.load();
+    try {
+      _bottomBanner = BannerAd(
+          size: AdSize.banner,
+          adUnitId: AdsHelper.bannerAdUtilId,
+          listener: BannerAdListener(
+            onAdLoaded: (ad) {
+              print("loadedddddddddddddddd");
+              setState(() {
+                _isBottomBannerLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) async {
+              print(err);
+              _bottomBanner!.dispose();
+              _bottomBanner = null;
+              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
+                  reason: 'load banner ad error', fatal: true);
+            },
+          ),
+          request: const AdRequest());
+      _headerBanner = BannerAd(
+          size: AdSize.banner,
+          adUnitId: AdsHelper.bannerAdUtilId,
+          listener: BannerAdListener(
+            onAdLoaded: (ad) {
+              print("loadedddddddddddddddd");
+              setState(() {
+                _isHeaderBannerLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) async {
+              print(err);
+              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
+                  reason: 'load banner ad error', fatal: true);
+              _headerBanner!.dispose();
+              _headerBanner = null;
+            },
+          ),
+          request: const AdRequest());
+      await _bottomBanner!.load();
+      await _headerBanner!.load();
+    } catch (e) {
+      FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
+    }
   }
 
   void _createInterstitialAd() async {
@@ -158,14 +150,11 @@ class _IntroduceViewState extends State<IntroduceView> {
           hideLoading();
         });
       },
-      onAdFailedToShowFullScreenContent:
-          (AdManagerInterstitialAd ad, AdError error) {
+      onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
         print('$ad onAdFailedToShowFullScreenContent: $error');
         ad.dispose();
       },
-      onAdImpression: (AdManagerInterstitialAd ad) =>
-          print('$ad impression occurred.'),
-
+      onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
     );
     await _interstitialAd.show();
   }
@@ -182,67 +171,78 @@ class _IntroduceViewState extends State<IntroduceView> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-          child:
-         Stack(children: [
-          Positioned(child:  Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                      child: Center(
-                        child: _icon(
-                            Icons.star_rounded, "Rate App", () => _openStore()),
-                      )),
-                  Expanded(
-                      child: Center(
-                        child: _icon(
-                            Icons.share, "Share App", () => _shareApp()),
-                      )),
-                  Expanded(
-                      child: Center(
-                        child: _icon(
-                            Icons.shield, "Privacy Policy", () =>
-                            _privacyPolicy()),
-                      )),
-                ],
+              Positioned(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Center(
+                          child: _icon(Icons.star_rounded, "Rate App", () => _openStore()),
+                        )),
+                        Expanded(
+                            child: Center(
+                          child: _icon(Icons.share, "Share App", () => _shareApp()),
+                        )),
+                        Expanded(
+                            child: Center(
+                          child: _icon(Icons.shield, "Privacy Policy", () => _privacyPolicy()),
+                        )),
+                      ],
+                    ),
+                    _isNativeAdLoaded
+                        ? Container(
+                            height: 120,
+                            alignment: Alignment.center,
+                            child: AdWidget(
+                              ad: _nativeAd!,
+                            ),
+                          )
+                        : Container(),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(primary: Colors.green.shade400),
+                        onPressed: () {
+                          _createInterstitialAd();
+                        },
+                        child: const Text(
+                          "Let's Start",
+                          style: TextStyle(color: Colors.white),
+                        )),
+                  ],
+                ),
+                top: 0,
+                right: 0,
+                left: 0,
+                bottom: 0,
               ),
-              _isNativeAdLoaded ? Container(
-                height: 120,
-                alignment: Alignment.center,
-                child: AdWidget(ad: _nativeAd!,),
-              ) : Container(),
-              ElevatedButton(
-                  style:
-                  ElevatedButton.styleFrom(primary: Colors.green.shade400),
-                  onPressed: () {
-                    _createInterstitialAd();
-                  },
-                  child: const Text(
-                    "Let's Start",
-                    style: TextStyle(color: Colors.white),
-                  )),
+              Positioned(
+                child: _isHeaderBannerLoaded
+                    ? Container(
+                        margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+                        child: AdWidget(
+                          ad: _headerBanner!,
+                        ),
+                        height: _headerBanner!.size.height.toDouble(),
+                        width: _headerBanner!.size.width.toDouble(),
+                      )
+                    : Container(),
+                top: 0,
+                right: 0,
+                left: 0,
+              ),
             ],
-          ),top: 0,right: 0,left: 0,bottom: 0,),
-           Positioned(child: _isHeaderBannerLoaded
-               ? Container(
-             margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-             child: AdWidget(
-               ad: _headerBanner!,
-             ),
-             height: _headerBanner!.size.height.toDouble(),
-             width: _headerBanner!.size.width.toDouble(),
-           )
-               : Container(),top: 0,right: 0,left: 0,),
-         ],),
+          ),
           padding: const EdgeInsets.all(16)),
       bottomNavigationBar: _isBottomBannerLoaded
           ? SizedBox(
-        child: AdWidget(ad: _bottomBanner!),
-        height: _bottomBanner!.size.height.toDouble(),
-        width: _bottomBanner!.size.width.toDouble(),
-      )
+              child: AdWidget(ad: _bottomBanner!),
+              height: _bottomBanner!.size.height.toDouble(),
+              width: _bottomBanner!.size.width.toDouble(),
+            )
           : Container(),
     );
   }
@@ -294,8 +294,7 @@ class _IntroduceViewState extends State<IntroduceView> {
   }
 
   _shareApp() async {
-    String link =
-        "https://play.google.com/store/apps/details?id=ngaoschos.videodownloader";
+    String link = "https://play.google.com/store/apps/details?id=ngaoschos.videodownloader";
     await Share.share(link, subject: "App Download Xvideo");
   }
 

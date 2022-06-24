@@ -1,4 +1,3 @@
-
 import 'package:clipboard/clipboard.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -49,31 +48,31 @@ class _DownloadViewState extends State<DownloadView> {
   }
 
   void initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
-          },
-        ),
-        request: const AdRequest());
+    try {
+      _bottomBanner = BannerAd(
+          size: AdSize.banner,
+          adUnitId: AdsHelper.bannerAdUtilId,
+          listener: BannerAdListener(
+            onAdLoaded: (ad) {
+              print("loadedddddddddddddddd");
+              setState(() {
+                _isBottomBannerLoaded = true;
+              });
+            },
+            onAdFailedToLoad: (ad, err) async {
+              print(err);
+              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
+                  reason: 'load banner ad error', fatal: true);
+              _bottomBanner!.dispose();
+              _bottomBanner = null;
+            },
+          ),
+          request: const AdRequest());
 
-    await _bottomBanner!.load();
+      await _bottomBanner!.load();
+    } catch (e) {
+      FirebaseCrashlytics.instance.setCustomKey('Main Download View', e.toString());
+    }
   }
 
   autoHideButton() {
@@ -136,15 +135,15 @@ class _DownloadViewState extends State<DownloadView> {
             ),
             ValueListenableBuilder<int>(
               valueListenable: bloc!.notifierTime,
-              builder: (BuildContext context,  value, Widget? child) {
+              builder: (BuildContext context, value, Widget? child) {
                 return value > 0
                     ? Container(
-                  child: Text(
-                    "Wait $value s for next download",
-                    style: const TextStyle(color: Colors.green),
-                  ),
-                  alignment: Alignment.center,
-                )
+                        child: Text(
+                          "Wait $value s for next download",
+                          style: const TextStyle(color: Colors.green),
+                        ),
+                        alignment: Alignment.center,
+                      )
                     : Container();
               },
             ),

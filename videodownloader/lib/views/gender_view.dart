@@ -39,30 +39,36 @@ class _GenderViewState extends State<GenderView> {
   }
 
   Future initNativeAds() async {
-    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
-        factoryId: 'listTile',
-        listener: NativeAdListener(
-            onAdLoaded: (ad) {
-              setState(() {
-                _isNativeAdLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              await FirebaseCrashlytics.instance.recordError(
-                  err,
-                  StackTrace.current,
-                  reason: 'load banner ad error',
-                  fatal: true
-              );
-              print(err);
-              ad.dispose();
-            }
-        ),
-        request: const AdRequest());
-    await _nativeAd!.load();
+   try{
+     _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+         factoryId: 'listTile',
+         listener: NativeAdListener(
+             onAdLoaded: (ad) {
+               setState(() {
+                 _isNativeAdLoaded = true;
+               });
+             },
+             onAdFailedToLoad: (ad, err) async {
+               await FirebaseCrashlytics.instance.recordError(
+                   err,
+                   StackTrace.current,
+                   reason: 'load banner ad error',
+                   fatal: true
+               );
+               print(err);
+               ad.dispose();
+             }
+         ),
+         request: const AdRequest());
+     await _nativeAd!.load();
+   }catch(e){
+     FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+
+   }
   }
 
   Future initLoadingAd() async {
+  try{
     await AdManagerInterstitialAd.load(
         adUnitId: AdsHelper.loadingAdUnitId,
         request: const AdManagerAdRequest(),
@@ -86,56 +92,64 @@ class _GenderViewState extends State<GenderView> {
           },
 
         ));
+  }catch(e){
+    FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+  }
   }
   Future initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async  {
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    _headerBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isHeaderBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err)  async {
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            print(err);
-            _headerBanner!.dispose();
-            _headerBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    await _bottomBanner!.load();
-    await _headerBanner!.load();
+   try{
+     _bottomBanner = BannerAd(
+         size: AdSize.banner,
+         adUnitId: AdsHelper.bannerAdUtilId,
+         listener: BannerAdListener(
+           onAdLoaded: (ad) {
+             print("loadedddddddddddddddd");
+             setState(() {
+               _isBottomBannerLoaded = true;
+             });
+           },
+           onAdFailedToLoad: (ad, err) async  {
+             print(err);
+             await FirebaseCrashlytics.instance.recordError(
+                 err,
+                 StackTrace.current,
+                 reason: 'load banner ad error',
+                 fatal: true
+             );
+             _bottomBanner!.dispose();
+             _bottomBanner = null;
+           },
+         ),
+         request: const AdRequest());
+     _headerBanner = BannerAd(
+         size: AdSize.banner,
+         adUnitId: AdsHelper.bannerAdUtilId,
+         listener: BannerAdListener(
+           onAdLoaded: (ad) {
+             print("loadedddddddddddddddd");
+             setState(() {
+               _isHeaderBannerLoaded = true;
+             });
+           },
+           onAdFailedToLoad: (ad, err)  async {
+             await FirebaseCrashlytics.instance.recordError(
+                 err,
+                 StackTrace.current,
+                 reason: 'load banner ad error',
+                 fatal: true
+             );
+             print(err);
+             _headerBanner!.dispose();
+             _headerBanner = null;
+           },
+         ),
+         request: const AdRequest());
+     await _bottomBanner!.load();
+     await _headerBanner!.load();
+   }catch(e){
+     FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+
+   }
   }
 
   void _createInterstitialAd() async {

@@ -51,7 +51,7 @@ class MainActivity: FlutterActivity() {
             if (call.method == "launchInstagram") {
                 launchInsta()
             }
-            result.notImplemented()
+//            result.notImplemented()
         }
     }
 

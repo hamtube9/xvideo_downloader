@@ -17,173 +17,173 @@ class WarningView extends StatefulWidget {
 }
 
 class _WarningViewState extends State<WarningView> {
-  BannerAd? _bottomBanner;
-  BannerAd? _headerBanner;
-  late AdManagerInterstitialAd _interstitialAd;
-  bool _isBottomBannerLoaded = false;
-  bool _isHeaderBannerLoaded = false;
-  bool _isLoadingAdLoaded = false;
-  bool _isNativeAdLoaded = false;
-  NativeAd? _nativeAd;
+  // BannerAd? _bottomBanner;
+  // BannerAd? _headerBanner;
+  // late AdManagerInterstitialAd _interstitialAd;
+  // bool _isBottomBannerLoaded = false;
+  // bool _isHeaderBannerLoaded = false;
+  // bool _isLoadingAdLoaded = false;
+  // bool _isNativeAdLoaded = false;
+  // NativeAd? _nativeAd;
 
   @override
   void initState() {
     super.initState();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Warning View');
 
-    Future.wait([
-      initBottomBanner(),
-      initLoadingAd(),
-      initNativeAds(),
-    ]);
+    // Future.wait([
+    //   initBottomBanner(),
+    //   initLoadingAd(),
+    //   initNativeAds(),
+    // ]);
   }
 
-
-  Future initNativeAds() async {
-    try{
-      _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
-          factoryId: 'listTile',
-          listener: NativeAdListener(
-              onAdLoaded: (ad) {
-                setState(() {
-                  _isNativeAdLoaded = true;
-                });
-              },
-              onAdFailedToLoad: (ad, err) async {
-                print(err);
-                ad.dispose();
-                await FirebaseCrashlytics.instance.recordError(
-                    err,
-                    StackTrace.current,
-                    reason: 'load native ad error',
-                    fatal: true
-                );
-              }
-          ),
-          request: const AdRequest());
-      await _nativeAd!.load();
-    }catch(e){
-      FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
-    }
-
-  }
-
-
-  Future initLoadingAd() async {
-    try{
-      await AdManagerInterstitialAd.load(
-          adUnitId: AdsHelper.loadingAdUnitId,
-          request: const AdManagerAdRequest(),
-          adLoadCallback: AdManagerInterstitialAdLoadCallback(
-            onAdLoaded: (AdManagerInterstitialAd ad) {
-              print("AdManagerInterstitialAd loadeddddddddddddd");
-              setState(() {
-                _isLoadingAdLoaded = true;
-                _interstitialAd = ad;
-              });
-              // Keep a reference to the ad so you can show it later.
-            },
-            onAdFailedToLoad: (LoadAdError error) async  {
-              await FirebaseCrashlytics.instance.recordError(
-                  error,
-                  StackTrace.current,
-                  reason: 'load banner ad error',
-                  fatal: true
-              );
-              print('InterstitialAd failed to load: $error');
-
-            },
-          ));
-    }catch(e){
-      FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
-    }
-
-  }
-
-  Future initBottomBanner() async {
-   try{
-     _bottomBanner = BannerAd(
-         size: AdSize.banner,
-         adUnitId: AdsHelper.bannerAdUtilId,
-         listener: BannerAdListener(
-           onAdLoaded: (ad) {
-             print("loadedddddddddddddddd");
-             setState(() {
-               _isBottomBannerLoaded = true;
-             });
-           },
-           onAdFailedToLoad: (ad, err) async  {
-             print(err);
-             await FirebaseCrashlytics.instance.recordError(
-                 err,
-                 StackTrace.current,
-                 reason: 'load banner ad error',
-                 fatal: true
-             );
-             _bottomBanner!.dispose();
-             _bottomBanner = null;
-
-           },
-         ),
-         request: const AdRequest());
-     _headerBanner = BannerAd(
-         size: AdSize.banner,
-         adUnitId: AdsHelper.bannerAdUtilId,
-         listener: BannerAdListener(
-           onAdLoaded: (ad) {
-             print("loadedddddddddddddddd");
-             setState(() {
-               _isHeaderBannerLoaded = true;
-             });
-           },
-           onAdFailedToLoad: (ad, err) {
-             print(err);
-             _headerBanner!.dispose();
-             _headerBanner = null;
-           },
-         ),
-         request: const AdRequest());
-     await _bottomBanner!.load();
-     await _headerBanner!.load();
-   }catch(e){
-     FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
-   }
-  }
-
-  void _createInterstitialAd() async {
-    if (_isLoadingAdLoaded == false) {
-      print("wait");
-      return;
-    }
-    _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        showLoading();
-        ad.dispose().then((value) {
-          navigation();
-          hideLoading();
-        });
-      },
-      onAdFailedToShowFullScreenContent:
-          (AdManagerInterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-      },
-      onAdImpression: (AdManagerInterstitialAd ad) =>
-          print('$ad impression occurred.'),
-    );
-    await _interstitialAd.show();
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _bottomBanner?.dispose();
-    _headerBanner?.dispose();
-  }
+  //
+  // Future initNativeAds() async {
+  //   try{
+  //     _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+  //         factoryId: 'listTile',
+  //         listener: NativeAdListener(
+  //             onAdLoaded: (ad) {
+  //               setState(() {
+  //                 _isNativeAdLoaded = true;
+  //               });
+  //             },
+  //             onAdFailedToLoad: (ad, err) async {
+  //               print(err);
+  //               ad.dispose();
+  //               await FirebaseCrashlytics.instance.recordError(
+  //                   err,
+  //                   StackTrace.current,
+  //                   reason: 'load native ad error',
+  //                   fatal: true
+  //               );
+  //             }
+  //         ),
+  //         request: const AdRequest());
+  //     await _nativeAd!.load();
+  //   }catch(e){
+  //     FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+  //   }
+  //
+  // }
+  //
+  //
+  // Future initLoadingAd() async {
+  //   try{
+  //     await AdManagerInterstitialAd.load(
+  //         adUnitId: AdsHelper.loadingAdUnitId,
+  //         request: const AdManagerAdRequest(),
+  //         adLoadCallback: AdManagerInterstitialAdLoadCallback(
+  //           onAdLoaded: (AdManagerInterstitialAd ad) {
+  //             print("AdManagerInterstitialAd loadeddddddddddddd");
+  //             setState(() {
+  //               _isLoadingAdLoaded = true;
+  //               _interstitialAd = ad;
+  //             });
+  //             // Keep a reference to the ad so you can show it later.
+  //           },
+  //           onAdFailedToLoad: (LoadAdError error) async  {
+  //             await FirebaseCrashlytics.instance.recordError(
+  //                 error,
+  //                 StackTrace.current,
+  //                 reason: 'load banner ad error',
+  //                 fatal: true
+  //             );
+  //             print('InterstitialAd failed to load: $error');
+  //
+  //           },
+  //         ));
+  //   }catch(e){
+  //     FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+  //   }
+  //
+  // }
+  //
+  // Future initBottomBanner() async {
+  //  try{
+  //    _bottomBanner = BannerAd(
+  //        size: AdSize.banner,
+  //        adUnitId: AdsHelper.bannerAdUtilId,
+  //        listener: BannerAdListener(
+  //          onAdLoaded: (ad) {
+  //            print("loadedddddddddddddddd");
+  //            setState(() {
+  //              _isBottomBannerLoaded = true;
+  //            });
+  //          },
+  //          onAdFailedToLoad: (ad, err) async  {
+  //            print(err);
+  //            await FirebaseCrashlytics.instance.recordError(
+  //                err,
+  //                StackTrace.current,
+  //                reason: 'load banner ad error',
+  //                fatal: true
+  //            );
+  //            _bottomBanner!.dispose();
+  //            _bottomBanner = null;
+  //
+  //          },
+  //        ),
+  //        request: const AdRequest());
+  //    _headerBanner = BannerAd(
+  //        size: AdSize.banner,
+  //        adUnitId: AdsHelper.bannerAdUtilId,
+  //        listener: BannerAdListener(
+  //          onAdLoaded: (ad) {
+  //            print("loadedddddddddddddddd");
+  //            setState(() {
+  //              _isHeaderBannerLoaded = true;
+  //            });
+  //          },
+  //          onAdFailedToLoad: (ad, err) {
+  //            print(err);
+  //            _headerBanner!.dispose();
+  //            _headerBanner = null;
+  //          },
+  //        ),
+  //        request: const AdRequest());
+  //    await _bottomBanner!.load();
+  //    await _headerBanner!.load();
+  //  }catch(e){
+  //    FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
+  //  }
+  // }
+  //
+  // void _createInterstitialAd() async {
+  //   if (_isLoadingAdLoaded == false) {
+  //     print("wait");
+  //     return;
+  //   }
+  //   _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
+  //     onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
+  //         print('%ad onAdShowedFullScreenContent.'),
+  //     onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
+  //       print('$ad onAdDismissedFullScreenContent.');
+  //       showLoading();
+  //       ad.dispose().then((value) {
+  //         navigation();
+  //         hideLoading();
+  //       });
+  //     },
+  //     onAdFailedToShowFullScreenContent:
+  //         (AdManagerInterstitialAd ad, AdError error) {
+  //       print('$ad onAdFailedToShowFullScreenContent: $error');
+  //       ad.dispose();
+  //     },
+  //     onAdImpression: (AdManagerInterstitialAd ad) =>
+  //         print('$ad impression occurred.'),
+  //   );
+  //   await _interstitialAd.show();
+  // }
+  //
+  // @override
+  // void dispose() {
+  //   // TODO: implement dispose
+  //   super.dispose();
+  //   _bottomBanner?.dispose();
+  //   _headerBanner?.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -234,17 +234,18 @@ class _WarningViewState extends State<WarningView> {
                         )),
                   ],
                 ),
-                _isNativeAdLoaded ? Container(
-                  height: 120,
-                  alignment: Alignment.center,
-                  child: AdWidget(ad: _nativeAd!,),
-                ) : Container(),
+                // _isNativeAdLoaded ? Container(
+                //   height: 120,
+                //   alignment: Alignment.center,
+                //   child: AdWidget(ad: _nativeAd!,),
+                // ) : Container(),
 
                 ElevatedButton(
                     style:
                     ElevatedButton.styleFrom(primary: Colors.green.shade400),
                     onPressed: () {
-                      _createInterstitialAd();
+                      navigation();
+                      // _createInterstitialAd();
                     },
                     child: const Text(
                       "Let's Start",
@@ -252,25 +253,25 @@ class _WarningViewState extends State<WarningView> {
                     )),
               ],
             ),top: 0,right: 0,left: 0,bottom: 0,),
-            Positioned(child: _isHeaderBannerLoaded
-                ? Container(
-              margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-              child: AdWidget(
-                ad: _headerBanner!,
-              ),
-              height: _headerBanner!.size.height.toDouble(),
-              width: _headerBanner!.size.width.toDouble(),
-            )
-                : Container(),top: 0,right: 0,left: 0,),
+            // Positioned(child: _isHeaderBannerLoaded
+            //     ? Container(
+            //   margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+            //   child: AdWidget(
+            //     ad: _headerBanner!,
+            //   ),
+            //   height: _headerBanner!.size.height.toDouble(),
+            //   width: _headerBanner!.size.width.toDouble(),
+            // )
+            //     : Container(),top: 0,right: 0,left: 0,),
           ],),
           padding: const EdgeInsets.all(16)),
-      bottomNavigationBar: _isBottomBannerLoaded
-          ? SizedBox(
-        child: AdWidget(ad: _bottomBanner!),
-        height: _bottomBanner!.size.height.toDouble(),
-        width: _bottomBanner!.size.width.toDouble(),
-      )
-          : Container(),
+      // bottomNavigationBar: _isBottomBannerLoaded
+      //     ? SizedBox(
+      //   child: AdWidget(ad: _bottomBanner!),
+      //   height: _bottomBanner!.size.height.toDouble(),
+      //   width: _bottomBanner!.size.width.toDouble(),
+      // )
+      //     : Container(),
     );
   }
 

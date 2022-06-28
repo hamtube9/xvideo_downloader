@@ -18,173 +18,173 @@ class GenderView extends StatefulWidget {
 class _GenderViewState extends State<GenderView> {
   Gender gender = Gender.male;
 
-  BannerAd? _bottomBanner;
-  BannerAd? _headerBanner;
-  late AdManagerInterstitialAd _interstitialAd;
-  bool _isBottomBannerLoaded = false;
-  bool _isHeaderBannerLoaded = false;
-  bool _isLoadingAdLoaded = false;
-  bool _isNativeAdLoaded = false;
-  NativeAd? _nativeAd;
+  // BannerAd? _bottomBanner;
+  // BannerAd? _headerBanner;
+  // late AdManagerInterstitialAd _interstitialAd;
+  // bool _isBottomBannerLoaded = false;
+  // bool _isHeaderBannerLoaded = false;
+  // bool _isLoadingAdLoaded = false;
+  // bool _isNativeAdLoaded = false;
+  // NativeAd? _nativeAd;
 
   @override
   void initState() {
     super.initState();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Gender View');
-    Future.wait([
-      initBottomBanner(),
-      initLoadingAd(),
-      initNativeAds(),
-    ]);
+    // Future.wait([
+    //   initBottomBanner(),
+    //   initLoadingAd(),
+    //   initNativeAds(),
+    // ]);
   }
-
-  Future initNativeAds() async {
-   try{
-     _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
-         factoryId: 'listTile',
-         listener: NativeAdListener(
-             onAdLoaded: (ad) {
-               setState(() {
-                 _isNativeAdLoaded = true;
-               });
-             },
-             onAdFailedToLoad: (ad, err) async {
-               await FirebaseCrashlytics.instance.recordError(
-                   err,
-                   StackTrace.current,
-                   reason: 'load banner ad error',
-                   fatal: true
-               );
-               print(err);
-               ad.dispose();
-             }
-         ),
-         request: const AdRequest());
-     await _nativeAd!.load();
-   }catch(e){
-     FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
-
-   }
-  }
-
-  Future initLoadingAd() async {
-  try{
-    await AdManagerInterstitialAd.load(
-        adUnitId: AdsHelper.loadingAdUnitId,
-        request: const AdManagerAdRequest(),
-        adLoadCallback: AdManagerInterstitialAdLoadCallback(
-          onAdLoaded: (AdManagerInterstitialAd ad) {
-            print("AdManagerInterstitialAd loadeddddddddddddd");
-            setState(() {
-              _isLoadingAdLoaded = true;
-              _interstitialAd = ad;
-            });
-            // Keep a reference to the ad so you can show it later.
-          },
-          onAdFailedToLoad: (LoadAdError error)async  {
-            await FirebaseCrashlytics.instance.recordError(
-                error,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            print('InterstitialAd failed to load: $error');
-          },
-
-        ));
-  }catch(e){
-    FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
-  }
-  }
-  Future initBottomBanner() async {
-   try{
-     _bottomBanner = BannerAd(
-         size: AdSize.banner,
-         adUnitId: AdsHelper.bannerAdUtilId,
-         listener: BannerAdListener(
-           onAdLoaded: (ad) {
-             print("loadedddddddddddddddd");
-             setState(() {
-               _isBottomBannerLoaded = true;
-             });
-           },
-           onAdFailedToLoad: (ad, err) async  {
-             print(err);
-             await FirebaseCrashlytics.instance.recordError(
-                 err,
-                 StackTrace.current,
-                 reason: 'load banner ad error',
-                 fatal: true
-             );
-             _bottomBanner!.dispose();
-             _bottomBanner = null;
-           },
-         ),
-         request: const AdRequest());
-     _headerBanner = BannerAd(
-         size: AdSize.banner,
-         adUnitId: AdsHelper.bannerAdUtilId,
-         listener: BannerAdListener(
-           onAdLoaded: (ad) {
-             print("loadedddddddddddddddd");
-             setState(() {
-               _isHeaderBannerLoaded = true;
-             });
-           },
-           onAdFailedToLoad: (ad, err)  async {
-             await FirebaseCrashlytics.instance.recordError(
-                 err,
-                 StackTrace.current,
-                 reason: 'load banner ad error',
-                 fatal: true
-             );
-             print(err);
-             _headerBanner!.dispose();
-             _headerBanner = null;
-           },
-         ),
-         request: const AdRequest());
-     await _bottomBanner!.load();
-     await _headerBanner!.load();
-   }catch(e){
-     FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
-
-   }
-  }
-
-  void _createInterstitialAd() async {
-    if(_isLoadingAdLoaded == false){
-      print("wait");
-      return;
-    }
-    _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        showLoading();
-        ad.dispose().then((value) {
-          hideLoading();
-          navigation();
-        });
-      },
-      onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-      },
-      onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
-    );
-    await _interstitialAd.show();
-
-  }
+  //
+  // Future initNativeAds() async {
+  //  try{
+  //    _nativeAd =  NativeAd(adUnitId: AdsHelper.loadingOriginId,
+  //        factoryId: 'listTile',
+  //        listener: NativeAdListener(
+  //            onAdLoaded: (ad) {
+  //              setState(() {
+  //                _isNativeAdLoaded = true;
+  //              });
+  //            },
+  //            onAdFailedToLoad: (ad, err) async {
+  //              await FirebaseCrashlytics.instance.recordError(
+  //                  err,
+  //                  StackTrace.current,
+  //                  reason: 'load banner ad error',
+  //                  fatal: true
+  //              );
+  //              print(err);
+  //              ad.dispose();
+  //            }
+  //        ),
+  //        request: const AdRequest());
+  //    await _nativeAd!.load();
+  //  }catch(e){
+  //    FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+  //
+  //  }
+  // }
+  //
+  // Future initLoadingAd() async {
+  // try{
+  //   await AdManagerInterstitialAd.load(
+  //       adUnitId: AdsHelper.loadingAdUnitId,
+  //       request: const AdManagerAdRequest(),
+  //       adLoadCallback: AdManagerInterstitialAdLoadCallback(
+  //         onAdLoaded: (AdManagerInterstitialAd ad) {
+  //           print("AdManagerInterstitialAd loadeddddddddddddd");
+  //           setState(() {
+  //             _isLoadingAdLoaded = true;
+  //             _interstitialAd = ad;
+  //           });
+  //           // Keep a reference to the ad so you can show it later.
+  //         },
+  //         onAdFailedToLoad: (LoadAdError error)async  {
+  //           await FirebaseCrashlytics.instance.recordError(
+  //               error,
+  //               StackTrace.current,
+  //               reason: 'load banner ad error',
+  //               fatal: true
+  //           );
+  //           print('InterstitialAd failed to load: $error');
+  //         },
+  //
+  //       ));
+  // }catch(e){
+  //   FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+  // }
+  // }
+  // Future initBottomBanner() async {
+  //  try{
+  //    _bottomBanner = BannerAd(
+  //        size: AdSize.banner,
+  //        adUnitId: AdsHelper.bannerAdUtilId,
+  //        listener: BannerAdListener(
+  //          onAdLoaded: (ad) {
+  //            print("loadedddddddddddddddd");
+  //            setState(() {
+  //              _isBottomBannerLoaded = true;
+  //            });
+  //          },
+  //          onAdFailedToLoad: (ad, err) async  {
+  //            print(err);
+  //            await FirebaseCrashlytics.instance.recordError(
+  //                err,
+  //                StackTrace.current,
+  //                reason: 'load banner ad error',
+  //                fatal: true
+  //            );
+  //            _bottomBanner!.dispose();
+  //            _bottomBanner = null;
+  //          },
+  //        ),
+  //        request: const AdRequest());
+  //    _headerBanner = BannerAd(
+  //        size: AdSize.banner,
+  //        adUnitId: AdsHelper.bannerAdUtilId,
+  //        listener: BannerAdListener(
+  //          onAdLoaded: (ad) {
+  //            print("loadedddddddddddddddd");
+  //            setState(() {
+  //              _isHeaderBannerLoaded = true;
+  //            });
+  //          },
+  //          onAdFailedToLoad: (ad, err)  async {
+  //            await FirebaseCrashlytics.instance.recordError(
+  //                err,
+  //                StackTrace.current,
+  //                reason: 'load banner ad error',
+  //                fatal: true
+  //            );
+  //            print(err);
+  //            _headerBanner!.dispose();
+  //            _headerBanner = null;
+  //          },
+  //        ),
+  //        request: const AdRequest());
+  //    await _bottomBanner!.load();
+  //    await _headerBanner!.load();
+  //  }catch(e){
+  //    FirebaseCrashlytics.instance.setCustomKey('Gender View',e.toString() );
+  //
+  //  }
+  // }
+  //
+  // void _createInterstitialAd() async {
+  //   if(_isLoadingAdLoaded == false){
+  //     print("wait");
+  //     return;
+  //   }
+  //   _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
+  //     onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
+  //         print('%ad onAdShowedFullScreenContent.'),
+  //     onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
+  //       print('$ad onAdDismissedFullScreenContent.');
+  //       showLoading();
+  //       ad.dispose().then((value) {
+  //         hideLoading();
+  //         navigation();
+  //       });
+  //     },
+  //     onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
+  //       print('$ad onAdFailedToShowFullScreenContent: $error');
+  //       ad.dispose();
+  //     },
+  //     onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
+  //   );
+  //   await _interstitialAd.show();
+  //
+  // }
 
 
   @override
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    _bottomBanner?.dispose();
-    _headerBanner?.dispose();
+    // _bottomBanner?.dispose();
+    // _headerBanner?.dispose();
   }
 
   @override
@@ -257,51 +257,52 @@ class _GenderViewState extends State<GenderView> {
                     )
                   ],
                 ),
-                _isNativeAdLoaded ? Container(
-                  height: 120,
-                  alignment: Alignment.center,
-                  child: AdWidget(ad: _nativeAd!,),
-                ) : Container(),
+                // _isNativeAdLoaded ? Container(
+                //   height: 120,
+                //   alignment: Alignment.center,
+                //   child: AdWidget(ad: _nativeAd!,),
+                // ) : Container(),
                 buttonContinue(),
               ],
             ),
-            top: _isHeaderBannerLoaded ? _headerBanner!.size.height.toDouble() : 0,
+            // top: _isHeaderBannerLoaded ? _headerBanner!.size.height.toDouble() : 0,
+            top: 0,
             right: 0,
             left: 0,
             bottom: 0,
           ),
-          Positioned(
-            child: _isHeaderBannerLoaded
-                ? Container(
-                    child: AdWidget(ad: _headerBanner!),
-                    width: _headerBanner!.size.width.toDouble(),
-                    height: _headerBanner!.size.height.toDouble(),
-                    alignment: Alignment.center,
-                  )
-                : Container(),
-            top: 0,
-            right: 0,
-            left: 0,
-            height: _isHeaderBannerLoaded ? _headerBanner!.size.height.toDouble() : 0,
-          )
+          // Positioned(
+          //   child: _isHeaderBannerLoaded
+          //       ? Container(
+          //           child: AdWidget(ad: _headerBanner!),
+          //           width: _headerBanner!.size.width.toDouble(),
+          //           height: _headerBanner!.size.height.toDouble(),
+          //           alignment: Alignment.center,
+          //         )
+          //       : Container(),
+          //   top: 0,
+          //   right: 0,
+          //   left: 0,
+          //   height: _isHeaderBannerLoaded ? _headerBanner!.size.height.toDouble() : 0,
+          // )
         ],
       ),
-      bottomNavigationBar: _isBottomBannerLoaded
-          ? Container(
-              child: AdWidget(ad: _bottomBanner!),
-              width: _bottomBanner!.size.width.toDouble(),
-              height: _bottomBanner!.size.height.toDouble(),
-              alignment: Alignment.center,
-            )
-          : Container(),
+      // bottomNavigationBar: _isBottomBannerLoaded
+      //     ? Container(
+      //         child: AdWidget(ad: _bottomBanner!),
+      //         width: _bottomBanner!.size.width.toDouble(),
+      //         height: _bottomBanner!.size.height.toDouble(),
+      //         alignment: Alignment.center,
+      //       )
+      //     : SizedBox(height: 0,width: 0,),
     );
   }
 
   buttonContinue() {
     return GestureDetector(
       onTap: () {
-        _createInterstitialAd();
-
+        // _createInterstitialAd();
+navigation();
       },
       child: Container(
         width: 160,

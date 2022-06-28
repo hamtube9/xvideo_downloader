@@ -31,9 +31,9 @@ class _DownloadViewState extends State<DownloadView> {
   TextEditingController? _searchController;
   TextEditingController? _urlController;
   MainBloc? bloc;
-
-  BannerAd? _bottomBanner;
-  bool _isBottomBannerLoaded = false;
+  //
+  // BannerAd? _bottomBanner;
+  // bool _isBottomBannerLoaded = false;
 
   @override
   void initState() {
@@ -44,36 +44,36 @@ class _DownloadViewState extends State<DownloadView> {
     _searchController = TextEditingController();
     _urlController = TextEditingController();
     // permission();
-    initBottomBanner();
+    // initBottomBanner();
   }
 
-  void initBottomBanner() async {
-    try {
-      _bottomBanner = BannerAd(
-          size: AdSize.banner,
-          adUnitId: AdsHelper.bannerAdUtilId,
-          listener: BannerAdListener(
-            onAdLoaded: (ad) {
-              print("loadedddddddddddddddd");
-              setState(() {
-                _isBottomBannerLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              print(err);
-              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
-                  reason: 'load banner ad error', fatal: true);
-              _bottomBanner!.dispose();
-              _bottomBanner = null;
-            },
-          ),
-          request: const AdRequest());
-
-      await _bottomBanner!.load();
-    } catch (e) {
-      FirebaseCrashlytics.instance.setCustomKey('Main Download View', e.toString());
-    }
-  }
+  // void initBottomBanner() async {
+  //   try {
+  //     _bottomBanner = BannerAd(
+  //         size: AdSize.banner,
+  //         adUnitId: AdsHelper.bannerAdUtilId,
+  //         listener: BannerAdListener(
+  //           onAdLoaded: (ad) {
+  //             print("loadedddddddddddddddd");
+  //             setState(() {
+  //               _isBottomBannerLoaded = true;
+  //             });
+  //           },
+  //           onAdFailedToLoad: (ad, err) async {
+  //             print(err);
+  //             await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
+  //                 reason: 'load banner ad error', fatal: true);
+  //             _bottomBanner!.dispose();
+  //             _bottomBanner = null;
+  //           },
+  //         ),
+  //         request: const AdRequest());
+  //
+  //     await _bottomBanner!.load();
+  //   } catch (e) {
+  //     FirebaseCrashlytics.instance.setCustomKey('Main Download View', e.toString());
+  //   }
+  // }
 
   autoHideButton() {
     Future.delayed(const Duration(milliseconds: 2000)).whenComplete(() {
@@ -163,16 +163,16 @@ class _DownloadViewState extends State<DownloadView> {
             ),
             privateMedia(),
             fbStories(),
-            _isBottomBannerLoaded
-                ? Container(
-                    child: AdWidget(
-                      ad: _bottomBanner!,
-                    ),
-                    height: _bottomBanner!.size.height.toDouble(),
-                    width: _bottomBanner!.size.width.toDouble(),
-                    alignment: Alignment.center,
-                  )
-                : Container()
+            // _isBottomBannerLoaded
+            //     ? Container(
+            //         child: AdWidget(
+            //           ad: _bottomBanner!,
+            //         ),
+            //         height: _bottomBanner!.size.height.toDouble(),
+            //         width: _bottomBanner!.size.width.toDouble(),
+            //         alignment: Alignment.center,
+            //       )
+            //     : Container()
           ],
         ),
       ),

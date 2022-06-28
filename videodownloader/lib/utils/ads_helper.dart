@@ -6,7 +6,8 @@ class AdsHelper{
 
   static String get bannerAdUtilId{
     if(Platform.isAndroid){
-      return "ca-app-pub-7047183990898007/1396718205";
+      return "ca-app-pub-7047183990898007/9470249964";
+      // return "ca-app-pub-7047183990898007/1396718205";
     }else if(Platform.isIOS){
       return "ca-app-pub-7047183990898007/4736004479";
     }

@@ -23,35 +23,35 @@ class GalleryView extends StatefulWidget {
 class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStateMixin {
   GalleryBloc? bloc;
 
-  BannerAd? _bottomBanner;
-  bool _isBottomBannerLoaded = false;
-
-  void initBottomBanner() async {
-    _bottomBanner = BannerAd(
-        size: AdSize.banner,
-        adUnitId: AdsHelper.bannerAdUtilId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            print("loadedddddddddddddddd");
-            setState(() {
-              _isBottomBannerLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad, err) async{
-            print(err);
-            await FirebaseCrashlytics.instance.recordError(
-                err,
-                StackTrace.current,
-                reason: 'load banner ad error',
-                fatal: true
-            );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
-          },
-        ),
-        request: const AdRequest());
-    await _bottomBanner!.load();
-  }
+  // BannerAd? _bottomBanner;
+  // bool _isBottomBannerLoaded = false;
+  //
+  // void initBottomBanner() async {
+  //   _bottomBanner = BannerAd(
+  //       size: AdSize.banner,
+  //       adUnitId: AdsHelper.bannerAdUtilId,
+  //       listener: BannerAdListener(
+  //         onAdLoaded: (ad) {
+  //           print("loadedddddddddddddddd");
+  //           setState(() {
+  //             _isBottomBannerLoaded = true;
+  //           });
+  //         },
+  //         onAdFailedToLoad: (ad, err) async{
+  //           print(err);
+  //           await FirebaseCrashlytics.instance.recordError(
+  //               err,
+  //               StackTrace.current,
+  //               reason: 'load banner ad error',
+  //               fatal: true
+  //           );
+  //           _bottomBanner!.dispose();
+  //           _bottomBanner = null;
+  //         },
+  //       ),
+  //       request: const AdRequest());
+  //   await _bottomBanner!.load();
+  // }
 
   @override
   void initState() {
@@ -59,7 +59,7 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Gallery View');
     bloc = GalleryProvider.of(context);
     bloc!.loadFiles();
-    initBottomBanner();
+    // initBottomBanner();
   }
 
   @override
@@ -104,16 +104,17 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
             ],
           ),
         ),
-        bottomNavigationBar: _isBottomBannerLoaded
-            ? Container(
-                child: AdWidget(
-                  ad: _bottomBanner!,
-                ),
-                height: _bottomBanner!.size.height.toDouble(),
-                width: _bottomBanner!.size.width.toDouble(),
-                alignment: Alignment.center,
-              )
-            : Container());
+        // bottomNavigationBar: _isBottomBannerLoaded
+        //     ? Container(
+        //         child: AdWidget(
+        //           ad: _bottomBanner!,
+        //         ),
+        //         height: _bottomBanner!.size.height.toDouble(),
+        //         width: _bottomBanner!.size.width.toDouble(),
+        //         alignment: Alignment.center,
+        //       )
+        //     : Container()
+        );
   }
 
   item(FileSystemEntity item) {

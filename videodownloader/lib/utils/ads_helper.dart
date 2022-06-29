@@ -14,6 +14,16 @@ class AdsHelper{
       throw UnsupportedError('Unsupport platform');
     }
   }
+  static String get bannerAdUtilId2{
+    if(Platform.isAndroid){
+      return "ca-app-pub-7047183990898007/9470249964";
+    }else if(Platform.isIOS){
+      return "ca-app-pub-7047183990898007/4736004479";
+    }
+    else{
+      throw UnsupportedError('Unsupport platform');
+    }
+  }
 
 
   static String get loadingAdUnitId{

@@ -19,7 +19,7 @@ class WarningView extends StatefulWidget {
 class _WarningViewState extends State<WarningView> {
   BannerAd? _bottomBanner;
   BannerAd? _headerBanner;
-  late AdManagerInterstitialAd _interstitialAd;
+  AdManagerInterstitialAd? _interstitialAd;
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
@@ -51,6 +51,10 @@ class _WarningViewState extends State<WarningView> {
               },
               onAdFailedToLoad: (ad, err) async {
                 print(err);
+                setState(() {
+                  _isNativeAdLoaded = false;
+                  _nativeAd = null;
+                });
                 ad.dispose();
                 await FirebaseCrashlytics.instance.recordError(
                     err,
@@ -63,6 +67,10 @@ class _WarningViewState extends State<WarningView> {
           request: const AdRequest());
       await _nativeAd!.load();
     }catch(e){
+      setState(() {
+        _isNativeAdLoaded = false;
+        _nativeAd = null;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
     }
 
@@ -84,6 +92,10 @@ class _WarningViewState extends State<WarningView> {
               // Keep a reference to the ad so you can show it later.
             },
             onAdFailedToLoad: (LoadAdError error) async  {
+              setState(() {
+                _interstitialAd = null;
+                _isLoadingAdLoaded = false;
+              });
               await FirebaseCrashlytics.instance.recordError(
                   error,
                   StackTrace.current,
@@ -95,6 +107,10 @@ class _WarningViewState extends State<WarningView> {
             },
           ));
     }catch(e){
+      setState(() {
+        _interstitialAd = null;
+        _isLoadingAdLoaded = false;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
     }
 
@@ -114,21 +130,24 @@ class _WarningViewState extends State<WarningView> {
            },
            onAdFailedToLoad: (ad, err) async  {
              print(err);
+             setState(() {
+               _isBottomBannerLoaded = false;
+               _bottomBanner = null;
+             });
+
              await FirebaseCrashlytics.instance.recordError(
                  err,
                  StackTrace.current,
                  reason: 'load banner ad error',
                  fatal: true
              );
-             _bottomBanner!.dispose();
-             _bottomBanner = null;
-
            },
          ),
          request: const AdRequest());
+
      _headerBanner = BannerAd(
          size: AdSize.banner,
-         adUnitId: AdsHelper.bannerAdUtilId,
+         adUnitId: AdsHelper.bannerAdUtilId2,
          listener: BannerAdListener(
            onAdLoaded: (ad) {
              print("loadedddddddddddddddd");
@@ -138,43 +157,56 @@ class _WarningViewState extends State<WarningView> {
            },
            onAdFailedToLoad: (ad, err) {
              print(err);
-             _headerBanner!.dispose();
-             _headerBanner = null;
+             setState(() {
+               _isHeaderBannerLoaded = false;
+               _headerBanner = null;
+             });
            },
          ),
          request: const AdRequest());
      await _bottomBanner!.load();
      await _headerBanner!.load();
    }catch(e){
+     setState(() {
+       _isHeaderBannerLoaded = false;
+       _headerBanner = null;
+       _isBottomBannerLoaded = false;
+       _bottomBanner = null;
+     });
      FirebaseCrashlytics.instance.setCustomKey('Warning View', e.toString());
    }
   }
 
   void _createInterstitialAd() async {
-    if (_isLoadingAdLoaded == false) {
-      print("wait");
-      return;
+    if(_interstitialAd == null){
+      navigation();
+    }else{
+      if (_isLoadingAdLoaded == false) {
+        print("wait");
+        return;
+      }
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
+            print('%ad onAdShowedFullScreenContent.'),
+        onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
+          print('$ad onAdDismissedFullScreenContent.');
+          showLoading();
+          ad.dispose().then((value) {
+            navigation();
+            hideLoading();
+          });
+        },
+        onAdFailedToShowFullScreenContent:
+            (AdManagerInterstitialAd ad, AdError error) {
+          print('$ad onAdFailedToShowFullScreenContent: $error');
+          ad.dispose();
+        },
+        onAdImpression: (AdManagerInterstitialAd ad) =>
+            print('$ad impression occurred.'),
+      );
+      await _interstitialAd!.show();
     }
-    _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        showLoading();
-        ad.dispose().then((value) {
-          navigation();
-          hideLoading();
-        });
-      },
-      onAdFailedToShowFullScreenContent:
-          (AdManagerInterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-      },
-      onAdImpression: (AdManagerInterstitialAd ad) =>
-          print('$ad impression occurred.'),
-    );
-    await _interstitialAd.show();
+
   }
 
   @override
@@ -183,6 +215,7 @@ class _WarningViewState extends State<WarningView> {
     super.dispose();
     _bottomBanner?.dispose();
     _headerBanner?.dispose();
+    _nativeAd?.dispose();
   }
 
   @override
@@ -234,7 +267,7 @@ class _WarningViewState extends State<WarningView> {
                         )),
                   ],
                 ),
-                _isNativeAdLoaded ? Container(
+                _isNativeAdLoaded && _nativeAd != null ? Container(
                   height: 120,
                   alignment: Alignment.center,
                   child: AdWidget(ad: _nativeAd!,),
@@ -252,7 +285,7 @@ class _WarningViewState extends State<WarningView> {
                     )),
               ],
             ),top: 0,right: 0,left: 0,bottom: 0,),
-            Positioned(child: _isHeaderBannerLoaded
+            Positioned(child: _isHeaderBannerLoaded && _headerBanner != null
                 ? Container(
               margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
               child: AdWidget(
@@ -261,16 +294,16 @@ class _WarningViewState extends State<WarningView> {
               height: _headerBanner!.size.height.toDouble(),
               width: _headerBanner!.size.width.toDouble(),
             )
-                : Container(),top: 0,right: 0,left: 0,),
+                : const SizedBox(height: 0,width: 0,),top: 0,right: 0,left: 0,),
           ],),
           padding: const EdgeInsets.all(16)),
-      bottomNavigationBar: _isBottomBannerLoaded
+      bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
           ? SizedBox(
         child: AdWidget(ad: _bottomBanner!),
         height: _bottomBanner!.size.height.toDouble(),
         width: _bottomBanner!.size.width.toDouble(),
       )
-          : Container(),
+          : const SizedBox(height: 0,width: 0,),
     );
   }
 

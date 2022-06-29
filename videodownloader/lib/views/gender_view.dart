@@ -116,7 +116,6 @@ class _GenderViewState extends State<GenderView> {
                  reason: 'load banner ad error',
                  fatal: true
              );
-             _bottomBanner!.dispose();
              _bottomBanner = null;
            },
          ),
@@ -139,7 +138,6 @@ class _GenderViewState extends State<GenderView> {
                  fatal: true
              );
              print(err);
-             _headerBanner!.dispose();
              _headerBanner = null;
            },
          ),
@@ -261,7 +259,7 @@ class _GenderViewState extends State<GenderView> {
                   height: 120,
                   alignment: Alignment.center,
                   child: AdWidget(ad: _nativeAd!,),
-                ) : Container(),
+                ) : const SizedBox(height: 0,width: 0,),
                 buttonContinue(),
               ],
             ),
@@ -271,14 +269,14 @@ class _GenderViewState extends State<GenderView> {
             bottom: 0,
           ),
           Positioned(
-            child: _isHeaderBannerLoaded
+            child: _isHeaderBannerLoaded && _headerBanner != null
                 ? Container(
                     child: AdWidget(ad: _headerBanner!),
                     width: _headerBanner!.size.width.toDouble(),
                     height: _headerBanner!.size.height.toDouble(),
                     alignment: Alignment.center,
                   )
-                : Container(),
+                :const SizedBox(height: 0,width: 0,),
             top: 0,
             right: 0,
             left: 0,
@@ -286,14 +284,14 @@ class _GenderViewState extends State<GenderView> {
           )
         ],
       ),
-      bottomNavigationBar: _isBottomBannerLoaded
+      bottomNavigationBar: _isBottomBannerLoaded  && _bottomBanner != null
           ? Container(
               child: AdWidget(ad: _bottomBanner!),
               width: _bottomBanner!.size.width.toDouble(),
               height: _bottomBanner!.size.height.toDouble(),
               alignment: Alignment.center,
             )
-          : Container(),
+          : const SizedBox(height: 0,width: 0,),
     );
   }
 

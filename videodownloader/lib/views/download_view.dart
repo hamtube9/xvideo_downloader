@@ -60,17 +60,23 @@ class _DownloadViewState extends State<DownloadView> {
               });
             },
             onAdFailedToLoad: (ad, err) async {
+              setState(() {
+                _isBottomBannerLoaded = false;
+                _bottomBanner = null;
+              });
               print(err);
               await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
                   reason: 'load banner ad error', fatal: true);
-              _bottomBanner!.dispose();
-              _bottomBanner = null;
             },
           ),
           request: const AdRequest());
 
       await _bottomBanner!.load();
     } catch (e) {
+      setState(() {
+        _isBottomBannerLoaded = false;
+        _bottomBanner = null;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Main Download View', e.toString());
     }
   }
@@ -90,6 +96,8 @@ class _DownloadViewState extends State<DownloadView> {
     _focusSearch?.dispose();
     _searchController?.dispose();
     _urlController?.dispose();
+    _bottomBanner?.dispose();
+
   }
 
   @override
@@ -163,7 +171,7 @@ class _DownloadViewState extends State<DownloadView> {
             ),
             privateMedia(),
             fbStories(),
-            _isBottomBannerLoaded
+            _isBottomBannerLoaded && _bottomBanner != null
                 ? Container(
                     child: AdWidget(
                       ad: _bottomBanner!,
@@ -172,7 +180,7 @@ class _DownloadViewState extends State<DownloadView> {
                     width: _bottomBanner!.size.width.toDouble(),
                     alignment: Alignment.center,
                   )
-                : Container()
+                : const SizedBox(height: 0 ,width: 0,)
           ],
         ),
       ),

@@ -21,7 +21,7 @@ class IntroduceView extends StatefulWidget {
 class _IntroduceViewState extends State<IntroduceView> {
   BannerAd? _bottomBanner;
   BannerAd? _headerBanner;
-  late AdManagerInterstitialAd _interstitialAd;
+  AdManagerInterstitialAd? _interstitialAd;
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isNativeAdLoaded = false;
@@ -51,6 +51,10 @@ class _IntroduceViewState extends State<IntroduceView> {
             });
           }, onAdFailedToLoad: (ad, err) async {
             print(err);
+            setState(() {
+              _isNativeAdLoaded = false;
+              _nativeAd = null;
+            });
             ad.dispose();
             await FirebaseCrashlytics.instance
                 .recordError(err, StackTrace.current, reason: 'load native ad  error', fatal: true);
@@ -77,12 +81,20 @@ class _IntroduceViewState extends State<IntroduceView> {
               // Keep a reference to the ad so you can show it later.
             },
             onAdFailedToLoad: (LoadAdError error) async {
+              setState(() {
+                _isLoadingAdLoaded = false;
+                _interstitialAd = null;
+              });
               print('InterstitialAd failed to load: $error');
               await FirebaseCrashlytics.instance
                   .recordError(error, StackTrace.current, reason: 'load ad error', fatal: true);
             },
           ));
     } catch (e) {
+      setState(() {
+        _isLoadingAdLoaded = false;
+        _interstitialAd = null;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
     }
   }
@@ -101,8 +113,10 @@ class _IntroduceViewState extends State<IntroduceView> {
             },
             onAdFailedToLoad: (ad, err) async {
               print(err);
-              _bottomBanner!.dispose();
-              _bottomBanner = null;
+              setState(() {
+                _isBottomBannerLoaded = false;
+                _bottomBanner = null;
+              });
               await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
                   reason: 'load banner ad error', fatal: true);
             },
@@ -110,7 +124,7 @@ class _IntroduceViewState extends State<IntroduceView> {
           request: const AdRequest());
       _headerBanner = BannerAd(
           size: AdSize.banner,
-          adUnitId: AdsHelper.bannerAdUtilId,
+          adUnitId: AdsHelper.bannerAdUtilId2,
           listener: BannerAdListener(
             onAdLoaded: (ad) {
               print("loadedddddddddddddddd");
@@ -119,11 +133,13 @@ class _IntroduceViewState extends State<IntroduceView> {
               });
             },
             onAdFailedToLoad: (ad, err) async {
+              setState(() {
+                _isHeaderBannerLoaded = false;
+                _headerBanner = null;
+              });
               print(err);
               await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
                   reason: 'load banner ad error', fatal: true);
-              _headerBanner!.dispose();
-              _headerBanner = null;
             },
           ),
           request: const AdRequest());
@@ -131,32 +147,44 @@ class _IntroduceViewState extends State<IntroduceView> {
       await _headerBanner!.load();
     } catch (e) {
       FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
+      setState(() {
+        _isBottomBannerLoaded = false;
+        _bottomBanner = null;
+        _isHeaderBannerLoaded = false;
+        _headerBanner = null;
+      });
     }
   }
 
   void _createInterstitialAd() async {
-    if (_isLoadingAdLoaded == false) {
-      print("wait");
-      return;
+    if(_interstitialAd == null){
+      navigation();
     }
-    _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        showLoading();
-        ad.dispose().then((value) {
-          navigation();
-          hideLoading();
-        });
-      },
-      onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-      },
-      onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
-    );
-    await _interstitialAd.show();
+    else{
+      if (_isLoadingAdLoaded == false) {
+        print("wait");
+        return;
+      }
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
+            print('%ad onAdShowedFullScreenContent.'),
+        onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
+          print('$ad onAdDismissedFullScreenContent.');
+          showLoading();
+          ad.dispose().then((value) {
+            navigation();
+            hideLoading();
+          });
+        },
+        onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
+          print('$ad onAdFailedToShowFullScreenContent: $error');
+          ad.dispose();
+        },
+        onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
+      );
+      await _interstitialAd!.show();
+    }
+
   }
 
   @override
@@ -165,6 +193,7 @@ class _IntroduceViewState extends State<IntroduceView> {
     super.dispose();
     _bottomBanner?.dispose();
     _headerBanner?.dispose();
+    _nativeAd?.dispose();
   }
 
   @override
@@ -194,7 +223,7 @@ class _IntroduceViewState extends State<IntroduceView> {
                         )),
                       ],
                     ),
-                    _isNativeAdLoaded
+                    _isNativeAdLoaded && _nativeAd != null
                         ? Container(
                             height: 120,
                             alignment: Alignment.center,
@@ -202,7 +231,7 @@ class _IntroduceViewState extends State<IntroduceView> {
                               ad: _nativeAd!,
                             ),
                           )
-                        : Container(),
+                        : const SizedBox(height: 0,width: 0,),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(primary: Colors.green.shade400),
                         onPressed: () {
@@ -220,7 +249,7 @@ class _IntroduceViewState extends State<IntroduceView> {
                 bottom: 0,
               ),
               Positioned(
-                child: _isHeaderBannerLoaded
+                child: _isHeaderBannerLoaded &&  _headerBanner != null
                     ? Container(
                         margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
                         child: AdWidget(
@@ -229,7 +258,7 @@ class _IntroduceViewState extends State<IntroduceView> {
                         height: _headerBanner!.size.height.toDouble(),
                         width: _headerBanner!.size.width.toDouble(),
                       )
-                    : Container(),
+                    : const SizedBox(height: 0,width: 0,),
                 top: 0,
                 right: 0,
                 left: 0,
@@ -237,13 +266,13 @@ class _IntroduceViewState extends State<IntroduceView> {
             ],
           ),
           padding: const EdgeInsets.all(16)),
-      bottomNavigationBar: _isBottomBannerLoaded
+      bottomNavigationBar: _isBottomBannerLoaded &&  _bottomBanner != null
           ? SizedBox(
               child: AdWidget(ad: _bottomBanner!),
               height: _bottomBanner!.size.height.toDouble(),
               width: _bottomBanner!.size.width.toDouble(),
             )
-          : Container(),
+          : const SizedBox(height: 0,width: 0),
     );
   }
 

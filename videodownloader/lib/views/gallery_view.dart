@@ -38,6 +38,10 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
             });
           },
           onAdFailedToLoad: (ad, err) async{
+            setState(() {
+              _isBottomBannerLoaded = false;
+              _bottomBanner = null;
+            });
             print(err);
             await FirebaseCrashlytics.instance.recordError(
                 err,
@@ -45,14 +49,19 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
                 reason: 'load banner ad error',
                 fatal: true
             );
-            _bottomBanner!.dispose();
-            _bottomBanner = null;
           },
         ),
         request: const AdRequest());
     await _bottomBanner!.load();
   }
 
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _bottomBanner?.dispose();
+
+  }
   @override
   void initState() {
     super.initState();
@@ -113,7 +122,7 @@ class _GalleryViewState extends State<GalleryView> with SingleTickerProviderStat
                 width: _bottomBanner!.size.width.toDouble(),
                 alignment: Alignment.center,
               )
-            : Container());
+            : const SizedBox(height: 0,width: 0,));
   }
 
   item(FileSystemEntity item) {

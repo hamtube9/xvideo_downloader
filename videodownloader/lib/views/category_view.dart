@@ -18,7 +18,7 @@ class CategoryView extends StatefulWidget {
 class _CategoryViewState extends State<CategoryView> {
   BannerAd? _bottomBanner;
   BannerAd? _headerBanner;
-  late AdManagerInterstitialAd _interstitialAd;
+    AdManagerInterstitialAd? _interstitialAd;
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
@@ -46,12 +46,20 @@ class _CategoryViewState extends State<CategoryView> {
               // Keep a reference to the ad so you can show it later.
             },
             onAdFailedToLoad: (LoadAdError error) async {
+              setState(() {
+                _isLoadingAdLoaded = false;
+                _interstitialAd = null;
+              });
               await FirebaseCrashlytics.instance.recordError(error, StackTrace.current,
                   reason: 'load banner ad error', fatal: true);
               print('InterstitialAd failed to load: $error');
             },
           ));
     } catch (e) {
+      setState(() {
+        _isLoadingAdLoaded = false;
+        _interstitialAd = null;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Category View', e.toString());
     }
   }
@@ -69,11 +77,14 @@ class _CategoryViewState extends State<CategoryView> {
               });
             },
             onAdFailedToLoad: (ad, err) async {
+              setState(() {
+                _isBottomBannerLoaded = false;
+                _bottomBanner = null;
+              });
               print(err);
               await FirebaseCrashlytics.instance
                   .recordError(err, StackTrace.current, reason: 'load banner ad error', fatal: true);
-              _bottomBanner!.dispose();
-              _bottomBanner = null;
+
             },
           ),
           request: const AdRequest());
@@ -88,44 +99,57 @@ class _CategoryViewState extends State<CategoryView> {
               });
             },
             onAdFailedToLoad: (ad, err) async {
+              setState(() {
+                _isHeaderBannerLoaded = false;
+                _headerBanner = null;
+              });
               print(err);
               await FirebaseCrashlytics.instance
                   .recordError(err, StackTrace.current, reason: 'load banner ad error', fatal: true);
-              _headerBanner!.dispose();
-              _headerBanner = null;
             },
           ),
           request: const AdRequest());
       await _bottomBanner!.load();
       await _headerBanner!.load();
     }catch(e){
+      setState(() {
+        _isHeaderBannerLoaded = false;
+        _headerBanner = null;
+        _isBottomBannerLoaded = false;
+        _bottomBanner = null;
+      });
       FirebaseCrashlytics.instance.setCustomKey('Category View', e.toString());
     }
   }
 
   void _createInterstitialAd() async {
-    if (_isLoadingAdLoaded == false) {
-      print("wait");
-      return;
+    if(_interstitialAd == null){
+      navigation();
+    }else{
+      if (_isLoadingAdLoaded == false) {
+        print("wait");
+        return;
+      }
+      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+        onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
+            print('%ad onAdShowedFullScreenContent.'),
+        onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
+          print('$ad onAdDismissedFullScreenContent.');
+          showLoading();
+          ad.dispose().then((value) {
+            hideLoading();
+            navigation();
+          });
+        },
+        onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
+          print('$ad onAdFailedToShowFullScreenContent: $error');
+          ad.dispose();
+        },
+        onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
+      );
+      await _interstitialAd!.show();
     }
-    _interstitialAd.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (AdManagerInterstitialAd ad) =>
-          print('%ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (AdManagerInterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        showLoading();
-        ad.dispose().then((value) {
-          hideLoading();
-          navigation();
-        });
-      },
-      onAdFailedToShowFullScreenContent: (AdManagerInterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-      },
-      onAdImpression: (AdManagerInterstitialAd ad) => print('$ad impression occurred.'),
-    );
-    await _interstitialAd.show();
+
   }
 
   @override
@@ -175,7 +199,7 @@ class _CategoryViewState extends State<CategoryView> {
               bottom: 0,
             ),
             Positioned(
-              child: _isHeaderBannerLoaded
+              child: _isHeaderBannerLoaded && _headerBanner != null
                   ? Container(
                       child: AdWidget(
                         ad: _headerBanner!,
@@ -184,7 +208,7 @@ class _CategoryViewState extends State<CategoryView> {
                       width: _headerBanner!.size.width.toDouble(),
                       alignment: Alignment.center,
                     )
-                  : Container(),
+                  : const SizedBox(height: 0,width: 0,),
               top: 0,
               right: 0,
               left: 0,
@@ -192,7 +216,7 @@ class _CategoryViewState extends State<CategoryView> {
             )
           ],
         ),
-        bottomNavigationBar: _isBottomBannerLoaded
+        bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
             ? Container(
                 child: AdWidget(
                   ad: _bottomBanner!,
@@ -201,7 +225,7 @@ class _CategoryViewState extends State<CategoryView> {
                 width: _bottomBanner!.size.width.toDouble(),
                 alignment: Alignment.center,
               )
-            : Container());
+            : const SizedBox(height: 0,width: 0,),);
   }
 
   buttonContinue() {

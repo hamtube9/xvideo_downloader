@@ -21,8 +21,8 @@ class LanguageView extends StatefulWidget {
 }
 
 class _LanguageViewState extends State<LanguageView> {
-  BannerAd? _bottomBanner;
-  BannerAd? _headerBanner;
+  AdManagerBannerAd? _bottomBanner;
+  AdManagerBannerAd? _headerBanner;
   AdManagerInterstitialAd? _interstitialAd;
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
@@ -32,11 +32,12 @@ class _LanguageViewState extends State<LanguageView> {
   void initState() {
     super.initState();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Language View');
-    initBottomBanner();
-    initLoadingAd();
+   Future.wait([
+   initBottomBanner(),
+    initLoadingAd()]);
   }
 
-  void initLoadingAd() async {
+  Future initLoadingAd() async {
     try {
       await AdManagerInterstitialAd.load(
           adUnitId: AdsHelper.loadingAdUnitId,
@@ -48,13 +49,15 @@ class _LanguageViewState extends State<LanguageView> {
                 _isLoadingAdLoaded = true;
                 _interstitialAd = ad;
               });
+              hideLoading();
               // Keep a reference to the ad so you can show it later.
             },
             onAdFailedToLoad: (LoadAdError error) async {
               setState(() {
-                _isLoadingAdLoaded = false;
+                _isLoadingAdLoaded = true;
                 _interstitialAd = null;
               });
+              hideLoading();
               await FirebaseCrashlytics.instance.recordError(error, StackTrace.current,
                   reason: 'load banner ad error', fatal: true);
               print('InterstitialAd failed to load: $error');
@@ -62,74 +65,83 @@ class _LanguageViewState extends State<LanguageView> {
           ));
     } catch (e) {
       FirebaseCrashlytics.instance.setCustomKey('Language View', e.toString());
+      setState(() {
+        _isLoadingAdLoaded = false;
+        _interstitialAd = null;
+      });
+      hideLoading();
     }
   }
 
-  void initBottomBanner() async {
+  Future initBottomBanner() async {
     try {
-      _bottomBanner = BannerAd(
-          size: AdSize.banner,
-          adUnitId: AdsHelper.bannerAdUtilId,
-          listener: BannerAdListener(
-            onAdLoaded: (ad) {
-              print("loadedddddddddddddddd");
-              setState(() {
-                _isBottomBannerLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              setState(() {
-                _isBottomBannerLoaded = false;
-                _bottomBanner = null;
-              });
-
-              print(err);
-              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
-                  reason: 'load banner ad error', fatal: true);
-            },
-          ),
-          request: const AdRequest());
-      _headerBanner = BannerAd(
-          size: AdSize.banner,
-          adUnitId: AdsHelper.bannerAdUtilId2,
-          listener: BannerAdListener(
-            onAdLoaded: (ad) {
-              print("loadedddddddddddddddd");
-              setState(() {
-                _isHeaderBannerLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              print(err);
-              setState(() {
-                _isHeaderBannerLoaded = false;
-                _headerBanner = null;
-              });
-              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
-                  reason: 'load banner ad error', fatal: true);
-            },
-          ),
-          request: const AdRequest());
+      _bottomBanner = AdManagerBannerAd(
+        sizes: [AdSize.banner],
+        request: const AdManagerAdRequest(),
+        adUnitId: AdsHelper.bannerAdUtilId,
+        listener: AdManagerBannerAdListener(
+          onAdLoaded: (ad) {
+            print("loadedddddddddddddddd");
+            setState(() {
+              _isBottomBannerLoaded = true;
+            });
+          },
+          onAdFailedToLoad: (ad, err) async {
+            print(err);
+            setState(() {
+              _isBottomBannerLoaded = false;
+              _bottomBanner = null;
+            });
+            await FirebaseCrashlytics.instance
+                .recordError(err, StackTrace.current, reason: 'load banner ad error', fatal: true);
+          },
+        ),
+      );
+      _headerBanner = AdManagerBannerAd(
+        sizes: [AdSize.banner],
+        request: const AdManagerAdRequest(),
+        adUnitId: AdsHelper.bannerAdUtilId,
+        listener: AdManagerBannerAdListener(
+          onAdLoaded: (ad) {
+            print("loadedddddddddddddddd");
+            setState(() {
+              _isHeaderBannerLoaded = true;
+            });
+            hideLoading();
+          },
+          onAdFailedToLoad: (ad, err) async {
+            print(err);
+            setState(() {
+              _isHeaderBannerLoaded = false;
+              _headerBanner = null;
+            });
+            hideLoading();
+            await FirebaseCrashlytics.instance
+                .recordError(err, StackTrace.current, reason: 'load banner ad error', fatal: true);
+          },
+        ),
+      );
       await _bottomBanner!.load();
       await _headerBanner!.load();
     } catch (e) {
-      FirebaseCrashlytics.instance.setCustomKey('Language View', e.toString());
+      FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
       setState(() {
-        _isHeaderBannerLoaded = false;
-        _headerBanner = null;
         _isBottomBannerLoaded = false;
         _bottomBanner = null;
+        _isHeaderBannerLoaded = false;
+        _headerBanner = null;
       });
+      hideLoading();
     }
   }
 
   void _createInterstitialAd() async {
-    if(_interstitialAd == null){
+    if(_interstitialAd == null && _isLoadingAdLoaded == true){
       navigation();
     }
     else{
       if (_isLoadingAdLoaded == false) {
-        print("wait");
+        showLoading();
         return;
       }
       _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
@@ -208,15 +220,15 @@ class _LanguageViewState extends State<LanguageView> {
                       child: AdWidget(
                         ad: _headerBanner!,
                       ),
-                      height: _headerBanner!.size.height.toDouble(),
-                      width: _headerBanner!.size.width.toDouble(),
+                      height: _headerBanner!.sizes.first.height.toDouble(),
+                      width: _headerBanner!.sizes.first.width.toDouble(),
                       alignment: Alignment.center,
                     )
                   : const SizedBox(height: 0,width: 0,),
               top: 0,
               right: 0,
               left: 0,
-              height: _isHeaderBannerLoaded ? _headerBanner!.size.height.toDouble() : 0,
+              height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
             )
           ],
         ),
@@ -225,8 +237,8 @@ class _LanguageViewState extends State<LanguageView> {
                 child: AdWidget(
                   ad: _bottomBanner!,
                 ),
-                height: _bottomBanner!.size.height.toDouble(),
-                width: _bottomBanner!.size.width.toDouble(),
+                height: _bottomBanner!.sizes.first.height.toDouble(),
+                width: _bottomBanner!.sizes.first.width.toDouble(),
                 alignment: Alignment.center,
               )
             :  const SizedBox(height: 0,width: 0,));

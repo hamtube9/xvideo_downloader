@@ -40,7 +40,7 @@ _initAds() async {
   await MobileAds.instance.initialize();
   if (kDebugMode) {
     RequestConfiguration configuration = RequestConfiguration(
-        testDeviceIds: ["A7454E1FD0E87DA10E30B70108A75C62"]);
+        testDeviceIds: ["46DECB1F2A9447C179291DE2970A74CB"]);
     MobileAds.instance.updateRequestConfiguration(configuration);
   }
 }
@@ -154,3 +154,5 @@ void showLoading() {
 void hideLoading() {
   EasyLoading.dismiss(animation: false);
 }
+
+

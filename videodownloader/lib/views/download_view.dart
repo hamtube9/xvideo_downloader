@@ -32,7 +32,7 @@ class _DownloadViewState extends State<DownloadView> {
   TextEditingController? _urlController;
   MainBloc? bloc;
 
-  BannerAd? _bottomBanner;
+  AdManagerBannerAd? _bottomBanner;
   bool _isBottomBannerLoaded = false;
 
   @override
@@ -47,37 +47,38 @@ class _DownloadViewState extends State<DownloadView> {
     initBottomBanner();
   }
 
-  void initBottomBanner() async {
+  Future initBottomBanner() async {
     try {
-      _bottomBanner = BannerAd(
-          size: AdSize.banner,
-          adUnitId: AdsHelper.bannerAdUtilId,
-          listener: BannerAdListener(
-            onAdLoaded: (ad) {
-              print("loadedddddddddddddddd");
-              setState(() {
-                _isBottomBannerLoaded = true;
-              });
-            },
-            onAdFailedToLoad: (ad, err) async {
-              setState(() {
-                _isBottomBannerLoaded = false;
-                _bottomBanner = null;
-              });
-              print(err);
-              await FirebaseCrashlytics.instance.recordError(err, StackTrace.current,
-                  reason: 'load banner ad error', fatal: true);
-            },
-          ),
-          request: const AdRequest());
+      _bottomBanner = AdManagerBannerAd(
+        sizes: [AdSize.banner],
+        request: const AdManagerAdRequest(),
+        adUnitId: AdsHelper.bannerAdUtilId,
+        listener: AdManagerBannerAdListener(
+          onAdLoaded: (ad) {
+            print("loadedddddddddddddddd");
+            setState(() {
+              _isBottomBannerLoaded = true;
+            });
+          },
+          onAdFailedToLoad: (ad, err) async {
+            print(err);
+            setState(() {
+              _isBottomBannerLoaded = false;
+              _bottomBanner = null;
+            });
+            await FirebaseCrashlytics.instance
+                .recordError(err, StackTrace.current, reason: 'load banner ad error', fatal: true);
+          },
+        ),
+      );
 
       await _bottomBanner!.load();
     } catch (e) {
+      FirebaseCrashlytics.instance.setCustomKey('Introduce View', e.toString());
       setState(() {
         _isBottomBannerLoaded = false;
         _bottomBanner = null;
       });
-      FirebaseCrashlytics.instance.setCustomKey('Main Download View', e.toString());
     }
   }
 
@@ -176,8 +177,8 @@ class _DownloadViewState extends State<DownloadView> {
                     child: AdWidget(
                       ad: _bottomBanner!,
                     ),
-                    height: _bottomBanner!.size.height.toDouble(),
-                    width: _bottomBanner!.size.width.toDouble(),
+                    height: _bottomBanner!.sizes.first.height.toDouble(),
+                    width: _bottomBanner!.sizes.first.width.toDouble(),
                     alignment: Alignment.center,
                   )
                 : const SizedBox(height: 0 ,width: 0,)

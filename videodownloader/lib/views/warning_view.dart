@@ -1,12 +1,18 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:share/share.dart';
 import 'package:store_redirect/store_redirect.dart';
+import 'package:videodownloader/bloc/gender_bloc.dart';
+import 'package:videodownloader/bloc/gender_provider.dart';
+import 'package:videodownloader/bloc/warning_bloc.dart';
+import 'package:videodownloader/bloc/warning_provider.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/gender_view.dart';
+import 'package:videodownloader/views/status_screen.dart';
 import 'package:videodownloader/views/web_view.dart';
 
 class WarningView extends StatefulWidget {
@@ -25,18 +31,24 @@ class _WarningViewState extends State<WarningView> {
   bool _isLoadingAdLoaded = false;
   bool _isNativeAdLoaded = false;
   NativeAd? _nativeAd;
+  WarningBloc? bloc;
 
   @override
   void initState() {
     super.initState();
+    bloc = WarningProvider.of(context);
+    bloc!.initNotifierConnectivity();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Warning View');
-
+    showLoading();
     Future.wait([
       initBottomBanner(),
       initLoadingAd(),
       initNativeAds(),
     ]);
+    hideLoading();
+
   }
+
 
 
   Future initNativeAds() async {
@@ -220,82 +232,16 @@ class _WarningViewState extends State<WarningView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-          child:
-          Stack(children: [
-            Positioned(child:  Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-
-                Center(child: Container(
-                  height: 40,
-                  width: 40,
-                  decoration: BoxDecoration(
-                      color: Colors.white, borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [BoxShadow(offset: Offset(0,0),spreadRadius: 1,blurRadius: 1)]),
-                  child: const Icon(
-                    Icons.computer,
-                    color: Colors.purple,
-                  ),
-                  alignment: Alignment.center,
-                ),),
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  padding: const EdgeInsets.all(8),
-                  child: const Text(
-                    "The video you're downloading might be too large. Make sure you have enough memory on your phone before download any video.\n \nFor better experience, it is recommended that you download video via wifi network, since downloading from data network will cost you more money. ",style: TextStyle(fontWeight: FontWeight.bold),),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                        child: Center(
-                          child: _icon(
-                              Icons.star_rounded, "Rate App", () => _openStore()),
-                        )),
-                    Expanded(
-                        child: Center(
-                          child: _icon(
-                              Icons.share, "Share App", () => _shareApp()),
-                        )),
-                    Expanded(
-                        child: Center(
-                          child: _icon(
-                              Icons.shield, "Privacy Policy", () =>
-                              _privacyPolicy()),
-                        )),
-                  ],
-                ),
-                _isNativeAdLoaded && _nativeAd != null ? Container(
-                  height: 120,
-                  alignment: Alignment.center,
-                  child: AdWidget(ad: _nativeAd!,),
-                ) : Container(),
-
-                ElevatedButton(
-                    style:
-                    ElevatedButton.styleFrom(primary: Colors.green.shade400),
-                    onPressed: () {
-                      _createInterstitialAd();
-                    },
-                    child: const Text(
-                      "Let's Start",
-                      style: TextStyle(color: Colors.white),
-                    )),
-              ],
-            ),top: 0,right: 0,left: 0,bottom: 0,),
-            Positioned(child: _isHeaderBannerLoaded && _headerBanner != null
-                ? Container(
-              margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
-              child: AdWidget(
-                ad: _headerBanner!,
-              ),
-              height: _headerBanner!.sizes.first.height.toDouble(),
-              width: _headerBanner!.sizes.first.width.toDouble(),
-            )
-                : const SizedBox(height: 0,width: 0,),top: 0,right: 0,left: 0,),
-          ],),
-          padding: const EdgeInsets.all(16)),
+      body: ValueListenableBuilder<ConnectivityResult?>(
+        builder: (context, value, child) {
+          print(value);
+          return StatusScreen(
+            connectivityResult: value,
+            mainWidget: _content(),
+          );
+        },
+        valueListenable: bloc!.notifierConnectivity,
+      ),
       bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
           ? SizedBox(
         child: AdWidget(ad: _bottomBanner!),
@@ -348,7 +294,7 @@ class _WarningViewState extends State<WarningView> {
 
   void navigation() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => const GenderView(),
+      builder: (context) => GenderProvider(child: const GenderView(),bloc: GenderBloc()),
     ));
   }
 
@@ -364,5 +310,84 @@ class _WarningViewState extends State<WarningView> {
     await Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => Webview(url: link),
     ));
+  }
+
+  _content() {
+    return Padding(
+        child:
+        Stack(children: [
+          Positioned(child:  Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+
+              Center(child: Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                    color: Colors.white, borderRadius: BorderRadius.circular(8),
+                    boxShadow: const [BoxShadow(offset: Offset(0,0),spreadRadius: 1,blurRadius: 1)]),
+                child: const Icon(
+                  Icons.computer,
+                  color: Colors.purple,
+                ),
+                alignment: Alignment.center,
+              ),),
+              Container(
+                margin: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
+                child: const Text(
+                  "The video you're downloading might be too large. Make sure you have enough memory on your phone before download any video.\n \nFor better experience, it is recommended that you download video via wifi network, since downloading from data network will cost you more money. ",style: TextStyle(fontWeight: FontWeight.bold),),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                      child: Center(
+                        child: _icon(
+                            Icons.star_rounded, "Rate App", () => _openStore()),
+                      )),
+                  Expanded(
+                      child: Center(
+                        child: _icon(
+                            Icons.share, "Share App", () => _shareApp()),
+                      )),
+                  Expanded(
+                      child: Center(
+                        child: _icon(
+                            Icons.shield, "Privacy Policy", () =>
+                            _privacyPolicy()),
+                      )),
+                ],
+              ),
+              _isNativeAdLoaded && _nativeAd != null ? Container(
+                height: 120,
+                alignment: Alignment.center,
+                child: AdWidget(ad: _nativeAd!,),
+              ) : Container(),
+
+              ElevatedButton(
+                  style:
+                  ElevatedButton.styleFrom(primary: Colors.green.shade400),
+                  onPressed: () {
+                    _createInterstitialAd();
+                  },
+                  child: const Text(
+                    "Let's Start",
+                    style: TextStyle(color: Colors.white),
+                  )),
+            ],
+          ),top: 0,right: 0,left: 0,bottom: 0,),
+          Positioned(child: _isHeaderBannerLoaded && _headerBanner != null
+              ? Container(
+            margin: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+            child: AdWidget(
+              ad: _headerBanner!,
+            ),
+            height: _headerBanner!.sizes.first.height.toDouble(),
+            width: _headerBanner!.sizes.first.width.toDouble(),
+          )
+              : const SizedBox(height: 0,width: 0,),top: 0,right: 0,left: 0,),
+        ],),
+        padding: const EdgeInsets.all(16));
   }
 }

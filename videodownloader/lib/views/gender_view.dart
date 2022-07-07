@@ -1,10 +1,16 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:videodownloader/bloc/category_bloc.dart';
+import 'package:videodownloader/bloc/category_provider.dart';
+import 'package:videodownloader/bloc/gender_bloc.dart';
+import 'package:videodownloader/bloc/gender_provider.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/category_view.dart';
+import 'package:videodownloader/views/status_screen.dart';
 
 enum Gender { male, female }
 
@@ -26,17 +32,23 @@ class _GenderViewState extends State<GenderView> {
   bool _isLoadingAdLoaded = false;
   bool _isNativeAdLoaded = false;
   NativeAd? _nativeAd;
+  GenderBloc? bloc;
 
   @override
   void initState() {
     super.initState();
+    bloc = GenderProvider.of(context);
+    bloc!.initNotifierConnectivity();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Gender View');
+    showLoading();
     Future.wait([
       initBottomBanner(),
       initLoadingAd(),
       initNativeAds(),
-    ]);
+    ]) ;
+    hideLoading();
   }
+
 
   Future initNativeAds() async {
     try {
@@ -194,124 +206,29 @@ class _GenderViewState extends State<GenderView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return  Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          Positioned(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Select your gender for better experience'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 120,
-                      child: Column(
-                        children: [
-                          Image.asset('assets/images/man.jpg'),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Radio(
-                                  value: Gender.male,
-                                  groupValue: gender,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      gender = Gender.male;
-                                    });
-                                  }),
-                              const Text(
-                                'Male',
-                                style: TextStyle(),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 16,
-                    ),
-                    SizedBox(
-                      width: 120,
-                      child: Column(
-                        children: [
-                          Image.asset('assets/images/woman.jpg'),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Radio(
-                                  value: Gender.female,
-                                  groupValue: gender,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      gender = Gender.female;
-                                    });
-                                  }),
-                              const Text(
-                                'Female',
-                                style: TextStyle(),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-                _isNativeAdLoaded
-                    ? Container(
-                        height: 120,
-                        alignment: Alignment.center,
-                        child: AdWidget(
-                          ad: _nativeAd!,
-                        ),
-                      )
-                    : const SizedBox(
-                        height: 0,
-                        width: 0,
-                      ),
-                buttonContinue(),
-              ],
-            ),
-            top: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
-            right: 0,
-            left: 0,
-            bottom: 0,
-          ),
-          Positioned(
-            child: _isHeaderBannerLoaded && _headerBanner != null
-                ? Container(
-                    child: AdWidget(ad: _headerBanner!),
-                    width: _headerBanner!.sizes.first.width.toDouble(),
-                    height: _headerBanner!.sizes.first.height.toDouble(),
-                    alignment: Alignment.center,
-                  )
-                : const SizedBox(
-                    height: 0,
-                    width: 0,
-                  ),
-            top: 0,
-            right: 0,
-            left: 0,
-            height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
-          )
-        ],
+      body:ValueListenableBuilder<ConnectivityResult?>(
+        builder: (context, value, child) {
+          print(value);
+          return StatusScreen(
+            connectivityResult: value,
+            mainWidget: _content(),
+          );
+        },
+        valueListenable: bloc!.notifierConnectivity,
       ),
       bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
           ? Container(
-              child: AdWidget(ad: _bottomBanner!),
-              width: _bottomBanner!.sizes.first.width.toDouble(),
-              height: _bottomBanner!.sizes.first.height.toDouble(),
-              alignment: Alignment.center,
-            )
+        child: AdWidget(ad: _bottomBanner!),
+        width: _bottomBanner!.sizes.first.width.toDouble(),
+        height: _bottomBanner!.sizes.first.height.toDouble(),
+        alignment: Alignment.center,
+      )
           : const SizedBox(
-              height: 0,
-              width: 0,
-            ),
+        height: 0,
+        width: 0,
+      ),
     );
   }
 
@@ -348,7 +265,115 @@ class _GenderViewState extends State<GenderView> {
 
   void navigation() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => const CategoryView(),
+      builder: (context) =>CategoryProvider(child:  const CategoryView(),bloc: CategoryBloc()),
     ));
+  }
+
+  _content() {
+    return  Stack(
+      children: [
+        Positioned(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Select your gender for better experience'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 120,
+                    child: Column(
+                      children: [
+                        Image.asset('assets/images/man.jpg'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Radio(
+                                value: Gender.male,
+                                groupValue: gender,
+                                onChanged: (v) {
+                                  setState(() {
+                                    gender = Gender.male;
+                                  });
+                                }),
+                            const Text(
+                              'Male',
+                              style: TextStyle(),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    width: 16,
+                  ),
+                  SizedBox(
+                    width: 120,
+                    child: Column(
+                      children: [
+                        Image.asset('assets/images/woman.jpg'),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Radio(
+                                value: Gender.female,
+                                groupValue: gender,
+                                onChanged: (v) {
+                                  setState(() {
+                                    gender = Gender.female;
+                                  });
+                                }),
+                            const Text(
+                              'Female',
+                              style: TextStyle(),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              _isNativeAdLoaded
+                  ? Container(
+                height: 120,
+                alignment: Alignment.center,
+                child: AdWidget(
+                  ad: _nativeAd!,
+                ),
+              )
+                  : const SizedBox(
+                height: 0,
+                width: 0,
+              ),
+              buttonContinue(),
+            ],
+          ),
+          top: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
+          right: 0,
+          left: 0,
+          bottom: 0,
+        ),
+        Positioned(
+          child: _isHeaderBannerLoaded && _headerBanner != null
+              ? Container(
+            child: AdWidget(ad: _headerBanner!),
+            width: _headerBanner!.sizes.first.width.toDouble(),
+            height: _headerBanner!.sizes.first.height.toDouble(),
+            alignment: Alignment.center,
+          )
+              : const SizedBox(
+            height: 0,
+            width: 0,
+          ),
+          top: 0,
+          right: 0,
+          left: 0,
+          height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
+        )
+      ],
+    );
   }
 }

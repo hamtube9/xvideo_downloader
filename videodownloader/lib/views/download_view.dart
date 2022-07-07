@@ -1,7 +1,9 @@
 import 'package:clipboard/clipboard.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:videodownloader/bloc/gallery_bloc.dart';
@@ -9,9 +11,11 @@ import 'package:videodownloader/bloc/gallery_provider.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/main.dart';
+import 'package:videodownloader/services/download_service.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/gallery_view.dart';
+import 'package:videodownloader/views/status_screen.dart';
 
 class DownloadView extends StatefulWidget {
   const DownloadView({Key? key}) : super(key: key);
@@ -40,6 +44,7 @@ class _DownloadViewState extends State<DownloadView> {
     super.initState();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Main Download View');
     bloc = MainProvider.of(context);
+    bloc!.initNotifierConnectivity();
     _focusSearch = FocusNode();
     _searchController = TextEditingController();
     _urlController = TextEditingController();
@@ -106,84 +111,15 @@ class _DownloadViewState extends State<DownloadView> {
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: height * 0.58,
-              child: Stack(
-                children: [
-                  Positioned(
-                    child: backgroundBlack(),
-                    height: height * 0.45,
-                    top: 0,
-                    right: 0,
-                    left: 0,
-                  ),
-                  Positioned(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: logo(),
-                          flex: 2,
-                        ),
-                        Expanded(
-                          child: inputLinkUrl(),
-                          flex: 3,
-                        )
-                      ],
-                    ),
-                    top: 0,
-                    right: 16,
-                    left: 16,
-                    bottom: 0,
-                  ),
-                ],
-              ),
-            ),
-            ValueListenableBuilder<int>(
-              valueListenable: bloc!.notifierTime,
-              builder: (BuildContext context, value, Widget? child) {
-                return value > 0
-                    ? Container(
-                        child: Text(
-                          "Wait $value s for next download",
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                        alignment: Alignment.center,
-                      )
-                    : Container();
-              },
-            ),
-            ValueListenableBuilder<String>(
-              valueListenable: bloc!.notifierError,
-              builder: (BuildContext context, String value, Widget? child) {
-                return value.isNotEmpty
-                    ? Container(
-                        child: Text(
-                          value,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        alignment: Alignment.center,
-                      )
-                    : Container();
-              },
-            ),
-            privateMedia(),
-            fbStories(),
-            _isBottomBannerLoaded && _bottomBanner != null
-                ? Container(
-                    child: AdWidget(
-                      ad: _bottomBanner!,
-                    ),
-                    height: _bottomBanner!.sizes.first.height.toDouble(),
-                    width: _bottomBanner!.sizes.first.width.toDouble(),
-                    alignment: Alignment.center,
-                  )
-                : const SizedBox(height: 0 ,width: 0,)
-          ],
-        ),
+      body: ValueListenableBuilder<ConnectivityResult?>(
+        builder: (context, value, child) {
+          print(value);
+          return StatusScreen(
+            connectivityResult: value,
+            mainWidget: _content(height),
+          );
+        },
+        valueListenable: bloc!.notifierConnectivity,
       ),
     );
   }
@@ -598,6 +534,88 @@ class _DownloadViewState extends State<DownloadView> {
           color: Colors.black,
           borderRadius:
               BorderRadius.only(bottomLeft: Radius.circular(60), bottomRight: Radius.circular(60))),
+    );
+  }
+
+  _content(double height) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(
+            height: height * 0.58,
+            child: Stack(
+              children: [
+                Positioned(
+                  child: backgroundBlack(),
+                  height: height * 0.45,
+                  top: 0,
+                  right: 0,
+                  left: 0,
+                ),
+                Positioned(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: logo(),
+                        flex: 2,
+                      ),
+                      Expanded(
+                        child: inputLinkUrl(),
+                        flex: 3,
+                      )
+                    ],
+                  ),
+                  top: 0,
+                  right: 16,
+                  left: 16,
+                  bottom: 0,
+                ),
+              ],
+            ),
+          ),
+          ValueListenableBuilder<int>(
+            valueListenable: bloc!.notifierTime,
+            builder: (BuildContext context, value, Widget? child) {
+              return value > 0
+                  ? Container(
+                child: Text(
+                  "Wait $value s for next download",
+                  style: const TextStyle(color: Colors.green),
+                ),
+                alignment: Alignment.center,
+              )
+                  : Container();
+            },
+          ),
+          ValueListenableBuilder<String>(
+            valueListenable: bloc!.notifierError,
+            builder: (BuildContext context, String value, Widget? child) {
+              return value.isNotEmpty
+                  ? Container(
+                child: Text(
+                  value,
+                  style: const TextStyle(color: Colors.red),
+                ),
+                alignment: Alignment.center,
+              )
+                  : Container();
+            },
+          ),
+          privateMedia(),
+          fbStories(),
+          _isBottomBannerLoaded && _bottomBanner != null
+              ? Container(
+            child: AdWidget(
+              ad: _bottomBanner!,
+            ),
+            height: _bottomBanner!.sizes.first.height.toDouble(),
+            width: _bottomBanner!.sizes.first.width.toDouble(),
+            alignment: Alignment.center,
+          )
+              : const SizedBox(height: 0 ,width: 0,)
+        ],
+      ),
     );
   }
 }

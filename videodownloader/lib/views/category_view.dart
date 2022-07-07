@@ -1,6 +1,10 @@
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:videodownloader/bloc/category_bloc.dart';
+import 'package:videodownloader/bloc/category_provider.dart';
+import 'package:videodownloader/bloc/language_bloc.dart';
+import 'package:videodownloader/bloc/language_provider.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/model/category/category.dart';
 import 'package:videodownloader/utils/ads_helper.dart';
@@ -22,12 +26,17 @@ class _CategoryViewState extends State<CategoryView> {
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
+  CategoryBloc? bloc;
 
   @override
   void initState() {
     super.initState();
+    bloc = CategoryProvider.of(context);
+    bloc!.initNotifierConnectivity();
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Category View');
+    showLoading();
     Future.wait([initBottomBanner(), initLoadingAd()]);
+    hideLoading();
   }
 
   Future initLoadingAd() async {
@@ -167,74 +176,20 @@ class _CategoryViewState extends State<CategoryView> {
   Widget build(BuildContext context) {
     var listCategories = categories;
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Select your favorite websites topics'),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Wrap(
-                      spacing: 24,
-                      direction: Axis.horizontal,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        if (listCategories.isNotEmpty)
-                          for (int i = 0; i < listCategories.length; i++)
-                            ChangeRaisedButtonColor(
-                              text: listCategories[i].name!,
-                              onClick: (v) {
-                                selectAnswer(listCategories[i]);
-                              },
-                              isSelected: listCategories[i].isSelected,
-                            )
-                      ]),
-                ),
-                buttonContinue()
-              ],
-            ),
-            top: 0,
-            right: 0,
-            left: 0,
-            bottom: 0,
-          ),
-          Positioned(
-            child: _isHeaderBannerLoaded && _headerBanner != null
-                ? Container(
-                    child: AdWidget(
-                      ad: _headerBanner!,
-                    ),
-                    height: _headerBanner!.sizes.first.height.toDouble(),
-                    width: _headerBanner!.sizes.first.width.toDouble(),
-                    alignment: Alignment.center,
-                  )
-                : const SizedBox(
-                    height: 0,
-                    width: 0,
-                  ),
-            top: 0,
-            right: 0,
-            left: 0,
-            height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
-          )
-        ],
-      ),
+      body: _content(listCategories),
       bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
           ? Container(
-              child: AdWidget(
-                ad: _bottomBanner!,
-              ),
-              height: _bottomBanner!.sizes.first.height.toDouble(),
-              width: _bottomBanner!.sizes.first.width.toDouble(),
-              alignment: Alignment.center,
-            )
+        child: AdWidget(
+          ad: _bottomBanner!,
+        ),
+        height: _bottomBanner!.sizes.first.height.toDouble(),
+        width: _bottomBanner!.sizes.first.width.toDouble(),
+        alignment: Alignment.center,
+      )
           : const SizedBox(
-              height: 0,
-              width: 0,
-            ),
+        height: 0,
+        width: 0,
+      ),
     );
   }
 
@@ -277,7 +232,65 @@ class _CategoryViewState extends State<CategoryView> {
 
   void navigation() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => const LanguageView(),
+      builder: (context) => LanguageProvider(child: const LanguageView(), bloc: LanguageBloc()),
     ));
+  }
+
+  _content(List<Category> listCategories) {
+    return Stack(
+      children: [
+        Positioned(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Select your favorite websites topics'),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Wrap(
+                    spacing: 24,
+                    direction: Axis.horizontal,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      if (listCategories.isNotEmpty)
+                        for (int i = 0; i < listCategories.length; i++)
+                          ChangeRaisedButtonColor(
+                            text: listCategories[i].name!,
+                            onClick: (v) {
+                              selectAnswer(listCategories[i]);
+                            },
+                            isSelected: listCategories[i].isSelected,
+                          )
+                    ]),
+              ),
+              buttonContinue()
+            ],
+          ),
+          top: 0,
+          right: 0,
+          left: 0,
+          bottom: 0,
+        ),
+        Positioned(
+          child: _isHeaderBannerLoaded && _headerBanner != null
+              ? Container(
+            child: AdWidget(
+              ad: _headerBanner!,
+            ),
+            height: _headerBanner!.sizes.first.height.toDouble(),
+            width: _headerBanner!.sizes.first.width.toDouble(),
+            alignment: Alignment.center,
+          )
+              : const SizedBox(
+            height: 0,
+            width: 0,
+          ),
+          top: 0,
+          right: 0,
+          left: 0,
+          height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
+        )
+      ],
+    );
   }
 }

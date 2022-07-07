@@ -82,7 +82,7 @@
 <!--           android:value="ca-app-pub-7047183990898007~6727742994"/>-->
        <meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
-           android:value="ca-app-pub-7923546650751133~3748447166"/>
+           android:value="@string/ads_id"/>
 
 
 

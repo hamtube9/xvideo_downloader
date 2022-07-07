@@ -1,7 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:videodownloader/bloc/language_bloc.dart';
+import 'package:videodownloader/bloc/language_provider.dart';
 import 'package:videodownloader/bloc/main_bloc.dart';
 import 'package:videodownloader/bloc/main_provider.dart';
 import 'package:videodownloader/model/category/category.dart';
@@ -10,6 +13,7 @@ import 'package:videodownloader/utils/ads_helper.dart';
 import 'package:videodownloader/utils/constants.dart';
 import 'package:videodownloader/views/button_animation_color.dart';
 import 'package:videodownloader/views/download_view.dart';
+import 'package:videodownloader/views/status_screen.dart';
 
 import '../main.dart';
 
@@ -27,15 +31,22 @@ class _LanguageViewState extends State<LanguageView> {
   bool _isBottomBannerLoaded = false;
   bool _isHeaderBannerLoaded = false;
   bool _isLoadingAdLoaded = false;
-
+  LanguageBloc? bloc;
   @override
   void initState() {
     super.initState();
+    bloc = LanguageProvider.of(context);
+    bloc!.initNotifierConnectivity();
+
     FirebaseCrashlytics.instance.setCustomKey(keyScreen, 'Language View');
-   Future.wait([
-   initBottomBanner(),
-    initLoadingAd()]);
+    showLoading();
+    Future.wait([
+      initBottomBanner(),
+      initLoadingAd(),
+    ]);
+    hideLoading();
   }
+
 
   Future initLoadingAd() async {
     try {
@@ -178,69 +189,25 @@ class _LanguageViewState extends State<LanguageView> {
   Widget build(BuildContext context) {
     final categories = categoriesLanguage;
     return Scaffold(
-        body: Stack(
-          children: [
-            Positioned(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('Select your Language'),
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Wrap(
-                          spacing: 16,
-                          direction: Axis.horizontal,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            if (categories.isNotEmpty)
-                              for (int i = 0; i < categories.length; i++)
-                                ChangeRaisedButtonColor(
-                                  text: categories[i].name!,
-                                  onClick: (v) {
-                                    selectAnswer(categories[i]);
-                                  },
-                                  isSelected: categories[i].isSelected,
-                                )
-                          ]),
-                    ),
-                  ),
-                  buttonContinue()
-                ],
-              ),
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-            ),
-            Positioned(
-              child: _isHeaderBannerLoaded && _headerBanner != null
-                  ? Container(
-                      child: AdWidget(
-                        ad: _headerBanner!,
-                      ),
-                      height: _headerBanner!.sizes.first.height.toDouble(),
-                      width: _headerBanner!.sizes.first.width.toDouble(),
-                      alignment: Alignment.center,
-                    )
-                  : const SizedBox(height: 0,width: 0,),
-              top: 0,
-              right: 0,
-              left: 0,
-              height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
-            )
-          ],
+        body:ValueListenableBuilder<ConnectivityResult?>(
+          builder: (context, value, child) {
+            print(value);
+            return StatusScreen(
+              connectivityResult: value,
+              mainWidget: _content(categories),
+            );
+          },
+          valueListenable: bloc!.notifierConnectivity,
         ),
         bottomNavigationBar: _isBottomBannerLoaded && _bottomBanner != null
             ? Container(
-                child: AdWidget(
-                  ad: _bottomBanner!,
-                ),
-                height: _bottomBanner!.sizes.first.height.toDouble(),
-                width: _bottomBanner!.sizes.first.width.toDouble(),
-                alignment: Alignment.center,
-              )
+          child: AdWidget(
+            ad: _bottomBanner!,
+          ),
+          height: _bottomBanner!.sizes.first.height.toDouble(),
+          width: _bottomBanner!.sizes.first.width.toDouble(),
+          alignment: Alignment.center,
+        )
             :  const SizedBox(height: 0,width: 0,));
   }
 
@@ -285,9 +252,64 @@ class _LanguageViewState extends State<LanguageView> {
 
   void navigation() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
-      builder: (context) => MainProvider(
-          child: const DownloadView(),
-          bloc: MainBloc(service: GetIt.instance.get<DownloadService>())),
+      builder: (context) => MainProvider(child: const DownloadView(),bloc: MainBloc(service: GetIt.instance.get<DownloadService>())),
     ));
+  }
+
+  _content(List<Category> categories ) {
+    return  Stack(
+      children: [
+        Positioned(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Select your Language'),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Wrap(
+                      spacing: 16,
+                      direction: Axis.horizontal,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        if (categories.isNotEmpty)
+                          for (int i = 0; i < categories.length; i++)
+                            ChangeRaisedButtonColor(
+                              text: categories[i].name!,
+                              onClick: (v) {
+                                selectAnswer(categories[i]);
+                              },
+                              isSelected: categories[i].isSelected,
+                            )
+                      ]),
+                ),
+              ),
+              buttonContinue()
+            ],
+          ),
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0,
+        ),
+        Positioned(
+          child: _isHeaderBannerLoaded && _headerBanner != null
+              ? Container(
+            child: AdWidget(
+              ad: _headerBanner!,
+            ),
+            height: _headerBanner!.sizes.first.height.toDouble(),
+            width: _headerBanner!.sizes.first.width.toDouble(),
+            alignment: Alignment.center,
+          )
+              : const SizedBox(height: 0,width: 0,),
+          top: 0,
+          right: 0,
+          left: 0,
+          height: _isHeaderBannerLoaded ? _headerBanner!.sizes.first.height.toDouble() : 0,
+        )
+      ],
+    );
   }
 }

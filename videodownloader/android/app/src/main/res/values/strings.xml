@@ -10,4 +10,5 @@
     <string name="flutter_downloader_notification_failed">Download failed</string>
     <string name="flutter_downloader_notification_complete">Download complete</string>
     <string name="flutter_downloader_notification_paused">Download paused</string>
+    <string name="ads_id">ca-app-pub-7923546650751133~3748447166</string>
 </resources>

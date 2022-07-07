@@ -4,8 +4,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dio/dio.dart';
-import 'package:downloads_path_provider/downloads_path_provider.dart';
-import 'package:ext_storage/ext_storage.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -13,18 +11,17 @@ import 'package:flutter/services.dart';
 // import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
-import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:videodownloader/bloc/connectivity_notifier.dart';
 import 'package:videodownloader/main.dart';
 import 'package:videodownloader/services/download_service.dart';
 import 'package:videodownloader/utils/compare.dart';
 import 'package:videodownloader/utils/constants.dart';
 import '../model/token.dart';
 
-class MainBloc extends ChangeNotifier {
+class MainBloc extends ConnectivityNotifier {
   final DownloadService service;
 
   MainBloc({
@@ -184,21 +181,21 @@ class MainBloc extends ChangeNotifier {
   }
 
   loadToken(String code) async {
-    final client = Client();
-    //  Dio dio = Dio();
-    // var r = await dio.post("https://api.instagram.com/oauth/access_token",queryParameters:{"client_id": instaAppId, "redirect_uri": redirectUri, "client_secre"
-    //     "t": instaAppSecret, "code": code, "grant_type": "authorization_code"} );
-    //
-    final response = await client
-        .post(Uri.parse("https://api.instagram.com/oauth/access_token"), body: {
-      "client_id": instaAppId,
-      "redirect_uri": redirectUri,
-      "client_secret": instaAppSecret,
-      "code": code,
-      "grant_type": "authorization_code"
-    });
-    var token = Token.fromMap(json.decode(response.body));
-    print(token.access);
+    // final client = Client();
+    // //  Dio dio = Dio();
+    // // var r = await dio.post("https://api.instagram.com/oauth/access_token",queryParameters:{"client_id": instaAppId, "redirect_uri": redirectUri, "client_secre"
+    // //     "t": instaAppSecret, "code": code, "grant_type": "authorization_code"} );
+    // //
+    // final response = await client
+    //     .post(Uri.parse("https://api.instagram.com/oauth/access_token"), body: {
+    //   "client_id": instaAppId,
+    //   "redirect_uri": redirectUri,
+    //   "client_secret": instaAppSecret,
+    //   "code": code,
+    //   "grant_type": "authorization_code"
+    // });
+    // var token = Token.fromMap(json.decode(response.body));
+    // print(token.access);
   }
 
   String fbProtocolUrl() {
